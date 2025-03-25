@@ -2,7 +2,7 @@ const JobListdata = [
     {
         id: 1,
         title: "Magento Developer",
-        name: "Themesbrand",
+        name: "Cardinal",
         location: "California",
         experience: "0-2 Years",
         position: 2,
@@ -58,7 +58,7 @@ const JobListdata = [
     {
         id: 5,
         title: "Product Sales Specialist",
-        name: "Skote Technology pvt.Ltd",
+        name: "Cardinal Technology pvt.Ltd",
         location: "Louisiana",
         experience: "5+ Years",
         position: 1,

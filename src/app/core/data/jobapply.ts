@@ -10,7 +10,7 @@ const JobApplydata = [
     {
         id: 2,
         title: "Apple School & College",
-        company: "Themesbrand",
+        company: "Cardinal",
         type: "Part Time",
         date: "15 June 2021",
         status: "New",
@@ -26,7 +26,7 @@ const JobApplydata = [
     {
         id: 4,
         title: "HTML Developer",
-        company: "Skote Technology pvt.Ltd",
+        company: "Cardinal Technology pvt.Ltd",
         type: "Full Time",
         date: "02 June 2021",
         status: "Active",
@@ -42,7 +42,7 @@ const JobApplydata = [
     {
         id: 6,
         title: "Magento Developer",
-        company: "Themesbrand",
+        company: "Cardinal",
         type: "Freelance",
         date: "25 June 2021",
         status: "Close",

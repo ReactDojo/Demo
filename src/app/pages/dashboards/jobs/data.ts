@@ -296,42 +296,42 @@ const vacancyData = [
     {
         image: 'assets/images/companies/airbnb.svg',
         title: 'Project Manager',
-        brand: 'Themesbrand',
+        brand: 'Cardinal',
         location: 'California',
         vacancy: 8
     },
     {
         image: 'assets/images/companies/mailchimp.svg',
         title: 'Marketing Director',
-        brand: 'Themesbrand',
+        brand: 'Cardinal',
         location: 'Danemark',
         vacancy: 12
     },
     {
         image: 'assets/images/companies/reddit.svg',
         title: 'Product Designer',
-        brand: 'Themesbrand',
+        brand: 'Cardinal',
         location: 'France',
         vacancy: 25
     },
     {
         image: 'assets/images/companies/amazon.svg',
         title: 'Magento Developer',
-        brand: 'Themesbrand',
+        brand: 'Cardinal',
         location: 'Hong-Kong',
         vacancy: 8
     },
     {
         image: 'assets/images/companies/adobe-photoshop.svg',
         title: 'Product Sales Specialist',
-        brand: 'Themesbrand',
+        brand: 'Cardinal',
         location: 'Louisiana',
         vacancy: 1
     },
     {
         image: 'assets/images/companies/line.svg',
         title: 'Business Associate',
-        brand: 'Themesbrand',
+        brand: 'Cardinal',
         location: 'Phoenix',
         vacancy: 15
     },
@@ -373,14 +373,14 @@ const recentJobsData = [
     {
         image: 'assets/images/companies/wechat.svg',
         title: 'Marketing Director',
-        brand: 'Themesbrand',
+        brand: 'Cardinal',
         location: 'USA',
         time: 53
     },
     {
         image: 'assets/images/companies/sass.svg',
         title: 'Frontend Developer',
-        brand: 'Themesbrand',
+        brand: 'Cardinal',
         location: 'Hong-Kong',
         time: 47
     },
@@ -394,7 +394,7 @@ const recentJobsData = [
     {
         image: 'assets/images/companies/airbnb.svg',
         title: 'NodeJs Developer',
-        brand: 'Skote Themes',
+        brand: 'Cardinal Themes',
         location: 'Louisiana',
         time: 2
     },
@@ -408,14 +408,14 @@ const recentJobsData = [
     {
         image: 'assets/images/companies/mailchimp.svg',
         title: 'Marketing Director',
-        brand: 'Skote Technology',
+        brand: 'Cardinal Technology',
         location: 'Dominica',
         time: 1
     },
     {
         image: 'assets/images/companies/spotify.svg',
         title: 'Business Associate',
-        brand: 'Themesbrand',
+        brand: 'Cardinal',
         location: 'Russia',
         time: 2
     },

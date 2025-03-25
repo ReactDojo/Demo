@@ -2,7 +2,7 @@ const listData = [
     {
         name: 'Marion Burton',
         id: '#14251',
-        title: 'Skote Dashboard UI',
+        title: 'Cardinal Dashboard UI',
         amount: '$1455',
         date: '10 Oct, 19',
     },

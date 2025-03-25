@@ -78,7 +78,7 @@ export class CalendarComponent implements OnInit {
   ngOnInit(): void {
     console.log('test');
     
-    this.breadCrumbItems = [{ label: 'Skote' }, { label: 'Calendar', active: true }];
+    this.breadCrumbItems = [{ label: 'Cardinal' }, { label: 'Calendar', active: true }];
 
     this.formData = this.formBuilder.group({
       title: ['', [Validators.required]],
