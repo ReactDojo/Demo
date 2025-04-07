@@ -29,7 +29,7 @@ export class AuthGuard implements CanActivate {
                 return true;
             }
             // check if user data is in storage is logged in via API.
-            if (localStorage.getItem('currentUser')) {
+            if (sessionStorage.getItem('currentUser')) {
                 return true;
             }
         }
