@@ -1,4 +1,4 @@
-# Cardinal -  Angular 13 Responsive Admin Dashboard Template 
+# Cardinal -  Angular 18 Responsive Admin Dashboard Template 
 
 ## Development server
 
