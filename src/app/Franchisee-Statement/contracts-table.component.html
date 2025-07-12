@@ -1,0 +1,295 @@
+<!-- contracts-table.component.html -->
+<div class="container-fluid" id="pdf-summary">
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="card-title">Franchisee Statements</h4>
+    </div>
+  
+    <div class="card-body">
+      <!-- CleanNet Canada Address -->
+      <div class="mb-4">
+        <table class="table table-borderless mb-0">
+          <tbody class="small">
+            <tr class="p-0 m-0"><td class="py-1"><strong>CleanNet Canada</strong></td></tr>
+            <tr class="p-0 m-0"><td class="py-1">#207, 12912-50 St NW</td></tr>
+            <tr class="p-0 m-0"><td class="py-1">Edmonton, AB, T5A 4L2</td></tr>
+            <tr class="p-0 m-0"><td class="py-1">+1 (403) 615 3601</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Supplier Dropdown -->
+      <form [formGroup]="filterForm">
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <label class="form-label">Select Supplier</label>
+            <ng-select
+              [items]="vendors"
+              bindLabel="CompanyName"
+              bindValue="Id"
+              formControlName="vendorID"
+              (change)="onVendorChange()"
+              placeholder="Search and select vendor"
+              [searchable]="true"
+              [clearable]="false">
+            </ng-select>
+          </div>
+        </div>
+      </form>
+      
+  
+      <!-- Accounts Table (Editable) -->
+      <div class="table-responsive mb-4">
+        <div class="table-responsive mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Accounts</h5>
+            <div class="input-group" style="width: 200px;">
+              <span class="input-group-text">Royalty Fee</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [(ngModel)]="newAccount.royaltyFee" 
+                name="globalRoyaltyFee"
+                (change)="applyRoyaltyFeeToAllAccounts()"
+              />
+            </div>
+          </div>
+        
+          <table class="table table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Customer Name</th>
+                
+                <th>Frequency</th>
+                <th>Visits</th>
+                <td>Calendar</td>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Monthly Payment <br> <span style="color: #0d6efd; font-weight: 400;">(From Agreement)</span></th>
+                <th>Balance</th>
+                <th class="text-center">
+                  Royalty Fee:
+                  <span style="color: #0d6efd; font-weight: 400;">
+                    {{ newAccount.royaltyFee }}%
+                  </span>
+                </th>
+                <th>Promissary Cost</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+          
+            <tbody>
+              <tr *ngFor="let account of accounts; let i = index">
+                <td>{{ getCustomerName(account.customerID) }}</td>
+                
+                <td><div>{{ getFrequencyName(account.frequencyID || '') }}</div>
+                  <div>{{ getFrequencyMonthly(account.frequencyID || 0) }}</div></td>
+                <td>
+                  <input
+                    type="number"
+                    class="form-control"
+                    [ngModel]="account.numOfVisits"
+                    (ngModelChange)="onVisitsChange(account, $event)"
+                    name="monthlyPayment-{{i}}"
+                  />
+                  <small *ngIf="account.numOfVisits > getFrequencyMonthly(account.frequencyID || 0)" class="text-danger">
+                    Visits exceed maximum allowed!
+                  </small>
+                </td>
+                <td>
+                  <div class="mini-calendar">
+                    <div class="weekdays">
+                      <span *ngFor="let w of ['S','M','T','W','T','F','S']">{{ w }}</span>
+                    </div>
+                    <div class="days-grid">
+                      <ng-container *ngFor="let date of getMiniCalendar(account); trackBy: trackByCalendarRefresh">
+                        <span
+                          [ngClass]="{
+                            'empty-day': date.day === 0,
+                            'disabled-day': date.isDisabled && !date.isActive,
+                            'active-day': date.isActive && !date.isDisabled
+                          }">
+                          {{ date.day || '' }}
+                        </span>
+                      </ng-container>
+                    </div>
+                  </div>
+                </td>
+                
+                <td>
+                  <input
+                    type="date"
+                    class="form-control"
+                    [ngModel]="account.startDate | date:'yyyy-MM-dd'"
+                    (ngModelChange)="account.startDate = $event"
+                    name="startDate-{{i}}"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="date"
+                    class="form-control"
+                    [ngModel]="account.endDate | date:'yyyy-MM-dd'"
+                    (ngModelChange)="onDateChange(account, $event, 'endDate')"
+                    name="endDate-{{i}}"
+                />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    class="form-control"
+                    [(ngModel)]="account.monthlyPayment"
+                    name="monthlyBilling-{{i}}"
+                  />
+                </td>
+                <td class="text-end">
+                  {{ calculateLinePayment(account) | currency }}
+                </td>
+                <td class="text-end">
+                  <span class="form-control-plaintext text-primary fw-semibold">
+                    {{ calculateRoyalty(account) | currency }}
+                  </span>
+                </td>
+                <td>{{ getMonthlyPaymentByCustomer(account.customerID) | currency }}</td>
+                <td>
+                  <button class="btn btn-success btn-sm" (click)="updateAccount(account)">Update</button>
+                  <button class="btn btn-danger btn-sm" (click)="deleteAccount(account.accountID)">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          
+            <tfoot class="table-light">
+              <tr>
+                <th colspan="2">Totals</th>
+                <th colspan="2">Total Net Payment {{ getTotalNetPayment() | currency }}</th>
+                <th>Royalty Fee  {{ (getTotalNetPayment() * (newAccount.royaltyFee / 100)).toFixed(2) | currency }}</th>
+                <th colspan="2"> Promissary Payment - {{ getTotalMonthlyBilling() | currency }}</th>
+                <th colspan="2">
+                  GST (5%): {{ getGSTDifference() | currency }}
+                </th>
+                <th colspan="2">
+                  Subtotal: {{ (getTotalNetPayment() - getTotalMonthlyBilling()) - (getTotalNetPayment() * (newAccount.royaltyFee / 100)) | currency }} <br />
+                  Total + (5%): {{ (getTotalNetPayment() - getTotalMonthlyBilling()) - (getTotalNetPayment() * (newAccount.royaltyFee / 100)) + getGSTDifference()| currency }}
+                </th>
+              </tr>
+            </tfoot>
+          </table>
+          <div class="mt-4">
+            <label for="billNotes" class="form-label fw-semibold">Notes / Description (appears on QuickBooks bill)</label>
+            <textarea
+              id="billNotes"
+              class="form-control"
+              rows="3"
+              [(ngModel)]="billPrivateNote"
+              placeholder="Enter notes for this franchisee bill (e.g., billing details, special terms)">
+            </textarea>
+          </div>
+        <div class="mt-6 text-end">
+          <button class="btn btn-primary btn-lg ms-2" (click)="printForm()">Print PDF</button>
+          <button class="btn btn-lg btn-success" (click)="saveAllAccounts()">Save To All Accounts</button>
+          <button class="btn btn-primary btn-lg ms-2" (click)="submitFranchiseeBill()">Submit Bill to QuickBooks</button>
+        </div>
+        <!-- Add New Account Form -->
+        <div class="mt-4">
+          <h6>Add New Account</h6>
+          <form (ngSubmit)="addAccount()" #newAccountForm="ngForm">
+            <div class="row g-2 align-items-end">
+              
+              <div class="col-md-3">
+                <label class="form-label">Customer</label>
+                <select class="form-select" [(ngModel)]="newAccount.customerID" name="customerID" required>
+                  <option *ngFor="let c of customers" [value]="c.Id">{{ c.DisplayName }}</option>
+                </select>
+              </div>
+          
+              <div class="col-md-2">
+                <label class="form-label">Start Date</label>
+                <input type="date" class="form-control" [(ngModel)]="newAccount.startDate" name="startDate" required>
+              </div>
+          
+              <div class="col-md-2">
+                <label class="form-label">End Date</label>
+                <input type="date" class="form-control" [(ngModel)]="newAccount.endDate" name="endDate">
+              </div>
+          
+              <div class="col-md-2">
+                <label class="form-label">Monthly Billing</label>
+                <input type="number" class="form-control" placeholder="Monthly" [(ngModel)]="newAccount.monthlyBilling" name="monthlyBilling">
+              </div>
+          
+              <div class="col-md-2">
+                <label class="form-label">Royalty Fee</label>
+                <input type="number" class="form-control" placeholder="Royalty" [(ngModel)]="newAccount.royaltyFee" name="royaltyFee">
+                
+              </div>
+          
+              <div class="col-md-1">
+                <label class="form-label d-block">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100">Add</button>
+              </div>
+          
+            </div>
+          </form>
+          
+        </div>
+       
+      </div>
+  
+      <!-- Contracts Table -->
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Contract ID</th>
+              <th>Customer</th>
+              <th>Duration</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Frequency</th>
+              <th>Financed Amount</th>
+              <th>Monthly Payment</th>
+              <th>Running Total</th>
+              <th>Notes</th>
+              <th>PaymentOnProduct</th>
+              <th>Delete</th>
+              
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="filteredContracts.length === 0">
+              <td colspan="11" class="text-center text-muted">No contracts found for this supplier.</td>
+            </tr>
+            <tr *ngFor="let contract of filteredContracts">
+              <td>{{ contract.contractID }}</td>
+              <td>{{ getCustomerName(contract.customerID) }}</td>
+              <td>{{ getProductName(contract.productID) }}</td>
+              <td>{{ contract.startDate | date }}</td>
+              <td>{{ contract.endDate | date }}</td>
+              <td>{{ getFrequencyName(contract.frequencyID) }}</td>
+              <td>{{ contract.financedAmount | currency }}</td>
+              <td>{{ contract.monthlyPayment | currency }}</td>
+              <td>{{ contract.runningTotal | currency }}</td>
+              <td>{{ contract.notes }}</td>
+              <td>{{ contract.paymentOnProduct }}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteContract(contract.contractID)">
+                  <i class="ri-delete-bin-line">DELETE</i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot class="table-light">
+            <tr>
+              <th colspan="6">Totals</th>
+              
+              <th> Promissary Payment - {{ getTotalMonthlyBilling() | currency }}</th>
+             
+              <th colspan="1"></th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>

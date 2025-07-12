@@ -16,11 +16,14 @@ import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
 import { environment } from './environments/environment';
 import { enableProdMode } from '@angular/core';
+import { importProvidersFrom } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { initFirebaseBackend } from './app/authUtils';
 import { FakeBackendInterceptor } from './app/core/helpers/fake-backend';
 import { HTTP_INTERCEPTORS, provideHttpClient } from '@angular/common/http';
 import { JwtInterceptor } from './app/core/helpers/jwt.interceptor';
 import { ErrorInterceptor } from './app/core/helpers/error.interceptor';
+import { AuthInterceptor } from './app/interceptors/auth.interceptor';
 // Enable production mode if in production environment
 if (environment.production) {
   enableProdMode();
@@ -35,9 +38,11 @@ if (environment.defaultauth === 'firebase') {
 bootstrapApplication(AppComponent, {
   providers: [
     provideHttpClient(),
+    importProvidersFrom(ReactiveFormsModule),
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: FakeBackendInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, 
     ...appConfig.providers
   ]
 })

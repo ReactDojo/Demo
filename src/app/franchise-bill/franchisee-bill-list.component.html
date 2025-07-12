@@ -1,0 +1,43 @@
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-body">
+      <h4 class="card-title">Franchisee Bills</h4>
+
+      <div *ngIf="loading">Loading...</div>
+
+      <div class="table-responsive mt-4">
+        <table class="table table-bordered table-striped">
+          <thead class="bg-light">
+            <tr>
+              <th>Date</th>
+              <th>Bill No</th>
+              <th>Vendor</th>
+              <th>Category</th>
+              <th>Total (Before Tax)</th>
+              <th>Sales Tax</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let bill of bills$ | async">
+              <td>{{ bill.TxnDate }}</td>
+              <td>{{ bill.DocNumber }}</td>
+              <td>{{ bill.VendorRef?.name }}</td>
+              <td>--Split--</td>
+              <td>{{ getTotalBeforeTax(bill) | currency }}</td>
+              <td>GST</td>
+              <td>{{ bill.TotalAmt | currency }}</td>
+              <td>Unpaid</td>
+              <td>
+                <button class="btn btn-sm btn-primary me-1" (click)="editBill(bill)">Edit</button>
+                <button class="btn btn-sm btn-success" (click)="markAsPaid(bill)">Mark Paid</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

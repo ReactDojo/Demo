@@ -1,0 +1,290 @@
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">Add Supplier Contract</h4>
+        </div>
+        <div class="card-body">
+            <form [formGroup]="contractForm" (ngSubmit)="submitForm()">
+                <div class="row">
+
+                    <!-- Vendor Dropdown (Searchable) -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Vendor</label>
+                        <ng-select
+                        [items]="vendors"
+                        bindLabel="CompanyName"
+                        bindValue="Id"
+                        placeholder="Select Vendor"
+                        formControlName="vendorID"
+                        [ngClass]="{ 'is-invalid': contractForm.get('vendorID')?.invalid && contractForm.get('vendorID')?.touched }"
+                        [searchable]="true"
+                        [clearable]="true"
+                        >
+                        </ng-select>
+                        <div class="invalid-feedback"
+                        *ngIf="contractForm.get('vendorID')?.invalid && contractForm.get('vendorID')?.touched">
+                        Please select a vendor.
+                        </div>
+                    </div>
+  
+
+
+
+                    <!-- Customer Dropdown -->
+                    <!-- Customer Dropdown (Searchable) -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Customer</label>
+                        <ng-select
+                        [items]="customers"
+                        bindLabel="DisplayName"
+                        bindValue="Id"
+                        placeholder="Select Customer"
+                        formControlName="customerID"
+                        [ngClass]="{ 'is-invalid': contractForm.get('customerID')?.invalid && contractForm.get('customerID')?.touched }"
+                        [searchable]="true"
+                        [clearable]="true"
+                        >
+                        </ng-select>
+                        <div class="invalid-feedback"
+                        *ngIf="contractForm.get('customerID')?.invalid && contractForm.get('customerID')?.touched">
+                        Please select a customer.
+                        </div>
+                    </div>
+  
+
+
+                    <!-- Frequency Dropdown -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Cleaning Frequency</label>
+                        <select class="form-select"
+                            formControlName="frequencyID"
+                            (change)="billingFrequencyChange()"
+                            [ngClass]="{ 'is-invalid': contractForm.get('frequencyID')?.invalid && contractForm.get('frequencyID')?.touched }">
+                            
+                            <option [ngValue]="null" disabled>Select Frequency</option>
+                            <option *ngFor="let freq of frequencies" [ngValue]="freq.frequencyID">
+                                {{ freq.description }}
+                            </option>
+                        </select>
+                        <div class="invalid-feedback"
+                            *ngIf="contractForm.get('frequencyID')?.invalid && contractForm.get('frequencyID')?.touched">
+                            Please select a frequency.
+                        </div>
+                    </div>
+
+                    <!-- Days of Week Checkboxes -->
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Days of Week</label>
+                        <div class="d-flex flex-wrap">
+                            <div *ngFor="let day of daysOfWeek" class="form-check me-3">
+                                <input 
+                                    type="checkbox"
+                                    class="form-check-input"
+                                    [value]="day"
+                                    (change)="onDaySelectionChange($event)"
+                                    [checked]="selectedDays.includes(day)"
+                                />
+                                <label class="form-check-label">
+                                    {{ day }}
+                                </label>
+                            </div>
+                        </div>
+                        <div *ngIf="daySelectionError" class="text-danger mt-1">
+                            {{ daySelectionError }}
+                        </div>
+                    </div>
+
+                    <!-- Product Duration -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Product Duration (months)</label>
+                        <select class="form-select" formControlName="productID"
+                            [ngClass]="{ 'is-invalid': contractForm.get('productID')?.invalid && contractForm.get('productID')?.touched }">
+                            <option [ngValue]="null" disabled>Select Duration</option>
+                            <option *ngFor="let product of products" [ngValue]="product.productID">
+                                {{ product.durationMonths }} months
+                            </option>
+                        </select>
+                        <div class="invalid-feedback"
+                            *ngIf="contractForm.get('productID')?.invalid && contractForm.get('productID')?.touched">
+                            Please select a product duration.
+                        </div>
+                    </div>
+
+
+
+                    <!-- Original Amount (Required) -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Original Amount</label>
+                        <input type="number" class="form-control" formControlName="originalAmount"
+                            placeholder="e.g. 3000.00"
+                            [ngClass]="{ 'is-invalid': contractForm.get('originalAmount')?.invalid && contractForm.get('originalAmount')?.touched }" />
+                        <div class="invalid-feedback"
+                            *ngIf="contractForm.get('originalAmount')?.invalid && contractForm.get('originalAmount')?.touched">
+                        Please enter the original amount.
+                        </div>
+                    </div>
+                    
+                    <!-- Financed Amount -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Financed Amount</label>
+                        <input type="number" class="form-control" formControlName="financedAmount"
+                            placeholder="e.g. 2400.00" />
+                    </div>
+                    
+                    <!-- 🔽 New Field: Down Payment -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Down Payment</label>
+                        <input type="number" class="form-control" formControlName="downpayment"
+                            placeholder="e.g. 600.00" />
+                    </div>
+                    
+                    <!-- 🔽 New Field: Customer Monthly Amount -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Customer Monthly Amount</label>
+                        <input type="number" class="form-control" formControlName="customermonthlyamount"
+                            placeholder="e.g. 200.00" />
+                    </div>
+  
+
+                    <!-- Start Date (Required) -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-control" formControlName="startDate"
+                            [ngClass]="{ 'is-invalid': contractForm.get('startDate')?.invalid && contractForm.get('startDate')?.touched }" />
+                        <div class="invalid-feedback"
+                            *ngIf="contractForm.get('startDate')?.invalid && contractForm.get('startDate')?.touched">
+                            Start date is required.
+                        </div>
+                    </div>
+
+                    <!-- End Date (Required) -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-control" formControlName="endDate"
+                            [ngClass]="{ 'is-invalid': contractForm.get('endDate')?.invalid && contractForm.get('endDate')?.touched }" />
+                        <div class="invalid-feedback"
+                            *ngIf="contractForm.get('endDate')?.invalid && contractForm.get('endDate')?.touched">
+                            End date is required.
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" formControlName="notes" rows="3"
+                            placeholder="Optional notes..."></textarea>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Initial Payments Made</label>
+                        <select class="form-select" formControlName="initialPaymentsMade">
+                          <option [ngValue]="null" disabled selected>Select Initial Payment</option>
+                          <option [ngValue]="1">1</option>
+                          <option [ngValue]="2">2</option>
+                          <option [ngValue]="3">3</option>
+                          <option [ngValue]="4">4</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3 mb-3">
+                        <label class="form-label">Calculated Monthly</label>
+                        <div class="form-control bg-light">{{ contractForm.value.monthlyAmount | currency:'CAD' }}</div>
+                      </div>
+                      
+                      <div class="col-md-3 mb-3">
+                        <label class="form-label">Remaining Payments</label>
+                        <div class="form-control bg-light">{{ adjustedPayments }}</div>
+                      </div>
+                      
+                      <div class="col-md-3 mb-3">
+                        <label class="form-label">Total Remaining Balance</label>
+                        <div class="form-control bg-light">{{ runningTotal | currency }}</div>
+                      </div>
+                      
+                      
+
+                </div>
+                <button type="submit" class="btn btn-primary">Save Contract</button>
+            </form>
+                <div class="table-responsive mt-4">
+                    
+                    <table class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Contract ID</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Frequency</th>
+                                <th>Customer Monthly Amount</th>
+                                <th>Purchase Price</th>
+                                <th>Down Payment</th>
+                                <th>Financed Amount</th>
+                                
+                                <th>Monthly Payments</th>
+                                <th>Running Total</th>
+                                <th>Number of Payments Left</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngIf="contracts.length === 0">
+                                <td colspan="9" class="text-center text-muted">No contracts available for this vendor.
+                                </td>
+                            </tr>
+                            <tr *ngFor="let contract of contracts">
+                                <td>{{ contract.contractID }}</td>
+                              
+                                <!-- Map customerID to display name -->
+                                <td>{{ getCustomerName(contract.customerID) }}</td>
+                              
+                                <!-- Map productID to duration -->
+                                <td>{{ getProductName(contract.productID) }}</td>
+                              
+                                <td>{{ contract.startDate | date: 'yyyy-MM-dd' }}</td>
+                                <td>{{ contract.endDate | date: 'yyyy-MM-dd' }}</td>
+                              
+                                <!-- Map frequencyID to readable description -->
+                                <td>{{ getFrequencyName(contract.frequencyID) }}</td>
+                                <th>{{ contract.customerMonthlyAmount | currency }}</th>
+                              
+                                
+                                <td>{{ contract.originalAmount | currency }}</td>
+                                <td>{{ (contract.originalAmount - contract.financedAmount) / getProductPrice(contract.productID) | currency }}</td>
+                                <td>{{ contract.financedAmount | currency }}</td>
+                                
+                                <td>
+                                    {{ contract.monthlyPayment | currency }}
+                                  </td>
+                                <td>{{ contract.runningTotal | currency }}</td>
+                                <td>{{ contract.paymentOnProduct }}</td>
+                                <td>{{ contract.notes }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" (click)="deleteContract(contract.contractID)">
+                                      Delete
+                                    </button>
+                                  </td>
+                              </tr>
+                              
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                              <th colspan="6">Totals</th>
+                              <th>{{ getTotalOriginalAmount() | currency }}</th>
+                              <th>{{ getTotalFinancedAmount() | currency }}</th>
+                              <th></th> <!-- For Original - Financed column, usually not totaled -->
+                              <th>{{ getTotalRunningTotal() | currency }}</th>
+                              <th colspan="3"></th> <!-- Empty for Payments, Notes, Actions -->
+                            </tr>
+                          </tfoot>
+                          
+                    </table>
+                </div>
+
+
+
+         
+        </div>
+    </div>
+</div>

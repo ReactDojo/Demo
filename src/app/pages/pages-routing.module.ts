@@ -19,6 +19,7 @@ const routes: Routes = [
   { path: 'pages', loadChildren: () => import('./utility/utility.module').then(m => m.UtilityModule) },
   { path: 'ui', loadChildren: () => import('./ui/ui.module').then(m => m.UiModule) },
   { path: 'tables', loadChildren: () => import('./tables/tables.module').then(m => m.TablesModule) },
+  { path: 'form', loadChildren: () => import('./form/form.module').then(m => m.FormModule) },
 ];
 
 @NgModule({

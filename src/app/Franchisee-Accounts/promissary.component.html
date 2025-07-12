@@ -1,0 +1,88 @@
+<!-- Cleaned contracts-table.component.html -->
+<div class="container-fluid" id="pdf-summary">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-title">Franchisee Contracts Summary</h4>
+      </div>
+  
+      <div class="card-body">
+        <!-- CleanNet Canada Address -->
+        <div class="mb-4">
+          <table class="table table-borderless mb-0">
+            <tbody class="small">
+              <tr class="p-0 m-0"><td class="py-1"><strong>CleanNet Canada</strong></td></tr>
+              <tr class="p-0 m-0"><td class="py-1">#207, 12912-50 St NW</td></tr>
+              <tr class="p-0 m-0"><td class="py-1">Edmonton, AB, T5A 4L2</td></tr>
+              <tr class="p-0 m-0"><td class="py-1">+1 (403) 615 3601</td></tr>
+            </tbody>
+          </table>
+        </div>
+  
+        <!-- Supplier Dropdown -->
+        <form [formGroup]="filterForm">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Select Supplier</label>
+              <ng-select
+                [items]="vendors"
+                bindLabel="CompanyName"
+                bindValue="Id"
+                formControlName="vendorID"
+                (change)="onVendorChange()"
+                placeholder="Search and select vendor"
+                [searchable]="true"
+                [clearable]="false">
+              </ng-select>
+            </div>
+          </div>
+        </form>
+  
+        <!-- Contracts Table -->
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Contract ID</th>
+                <th>Customer</th>
+                <th>Duration</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Frequency</th>
+                <th>Financed Amount</th>
+                <th>Monthly Payment</th>
+                <th>Running Total</th>
+                <th>Notes</th>
+                <th>PaymentOnProduct</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="filteredContracts.length === 0">
+                <td colspan="12" class="text-center text-muted">No contracts found for this supplier.</td>
+              </tr>
+              <tr *ngFor="let contract of filteredContracts">
+                <td>{{ contract.contractID }}</td>
+                <td>{{ getCustomerName(contract.customerID) }}</td>
+                <td>{{ getProductName(contract.productID) }}</td>
+                <td>{{ contract.startDate | date }}</td>
+                <td>{{ contract.endDate | date }}</td>
+                <td>{{ getFrequencyName(contract.frequencyID) }}</td>
+                <td>{{ contract.financedAmount | currency }}</td>
+                <td>{{ contract.monthlyPayment | currency }}</td>
+                <td>{{ contract.runningTotal | currency }}</td>
+                <td>{{ contract.notes }}</td>
+                <td>{{ contract.paymentOnProduct }}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteContract(contract.contractID)">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  

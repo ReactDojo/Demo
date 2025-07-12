@@ -1,5 +1,5 @@
 import { MenuItem } from './menu.model';
-
+//Cardinal Menu Sidebar 2025
 export const MENU: MenuItem[] = [
     // {
     //     id: 1,
@@ -58,13 +58,51 @@ export const MENU: MenuItem[] = [
     //     icon: 'bx-calendar',
     //     link: '/calendar',
     // },
+    //Cardinal Menu
     {
-        id: 11,
-        label: 'MENUITEMS.CHAT.TEXT',
-        icon: 'bx-chat',
-        link: '/chat',
+        id: 200,
+        label: 'Royalty',
+        icon: 'bx-file',
+        link: '/form/Royalty'
+      },
+      {
+        id: 200,
+        label: 'Franchisee Statement',
+        icon: 'bx-receipt', // or any icon you like (e.g., bx-file, bx-money)
+        link: '/form/franchisee-statement',
+      },
+      {
+        id: 200,
+        label: 'Franchisee History',
+        icon: 'bx-receipt', // or any icon you like (e.g., bx-file, bx-money)
+        link: '/form/franchisee-history',
+      },
+      {
+        id: 200,
+        label: 'Franchisee Agreements',
+        icon: 'bx-file',
+        link: '/form/Franchisee-Agreement'
+      },
+      {
+        id: 200,
+        label: 'Franchisee Promissary',
+        icon: 'bx-file',
+        link: '/form/promissary-contracts'
+      },
+    //   {
+    //     id: 200,
+    //     label: 'Customer',
+    //     icon: 'bx-file',
+    //     link: '/form/Customer'
+    //   },
+   
+    // {
+    //     id: 11,
+    //     label: 'MENUITEMS.CHAT.TEXT',
+    //     icon: 'bx-chat',
+    //     link: '/chat',
 
-    },
+    // },
     // {
     //     id: 12,
     //     label: 'MENUITEMS.FILEMANAGER.TEXT',
@@ -709,71 +747,71 @@ export const MENU: MenuItem[] = [
     //         },
     //     ]
     // },
-    // {
-    //     id: 116,
-    //     label: 'MENUITEMS.FORMS.TEXT',
-    //     icon: 'bxs-eraser',
-    //     badge: {
-    //         variant: 'danger',
-    //         text: 'MENUITEMS.FORMS.BADGE',
-    //     },
-    //     subItems: [
-    //         {
-    //             id: 117,
-    //             label: 'MENUITEMS.FORMS.LIST.ELEMENTS',
-    //             link: '/form/elements',
-    //             parentId: 116
-    //         },
-    //         {
-    //             id: 118,
-    //             label: 'MENUITEMS.FORMS.LIST.LAYOUTS',
-    //             link: '/form/layouts',
-    //             parentId: 116
-    //         },
-    //         {
-    //             id: 119,
-    //             label: 'MENUITEMS.FORMS.LIST.VALIDATION',
-    //             link: '/form/validation',
-    //             parentId: 116
-    //         },
-    //         {
-    //             id: 120,
-    //             label: 'MENUITEMS.FORMS.LIST.ADVANCED',
-    //             link: '/form/advanced',
-    //             parentId: 116
-    //         },
-    //         {
-    //             id: 121,
-    //             label: 'MENUITEMS.FORMS.LIST.EDITOR',
-    //             link: '/form/editor',
-    //             parentId: 116
-    //         },
-    //         {
-    //             id: 122,
-    //             label: 'MENUITEMS.FORMS.LIST.FILEUPLOAD',
-    //             link: '/form/uploads',
-    //             parentId: 116
-    //         },
-    //         {
-    //             id: 123,
-    //             label: 'MENUITEMS.FORMS.LIST.REPEATER',
-    //             link: '/form/repeater',
-    //             parentId: 116
-    //         },
-    //         {
-    //             id: 124,
-    //             label: 'MENUITEMS.FORMS.LIST.WIZARD',
-    //             link: '/form/wizard',
-    //             parentId: 116
-    //         },
-    //         {
-    //             id: 125,
-    //             label: 'MENUITEMS.FORMS.LIST.MASK',
-    //             link: '/form/mask',
-    //             parentId: 116
-    //         }
-    //     ]
-    // },
+    {
+        id: 116,
+        label: 'MENUITEMS.FORMS.TEXT',
+        icon: 'bxs-eraser',
+        badge: {
+            variant: 'danger',
+            text: 'MENUITEMS.FORMS.BADGE',
+        },
+        subItems: [
+            {
+                id: 117,
+                label: 'MENUITEMS.FORMS.LIST.ELEMENTS',
+                link: '/form/elements',
+                parentId: 116
+            },
+            {
+                id: 118,
+                label: 'MENUITEMS.FORMS.LIST.LAYOUTS',
+                link: '/form/layouts',
+                parentId: 116
+            },
+            {
+                id: 119,
+                label: 'MENUITEMS.FORMS.LIST.VALIDATION',
+                link: '/form/validation',
+                parentId: 116
+            },
+            {
+                id: 120,
+                label: 'MENUITEMS.FORMS.LIST.ADVANCED',
+                link: '/form/advanced',
+                parentId: 116
+            },
+            {
+                id: 121,
+                label: 'MENUITEMS.FORMS.LIST.EDITOR',
+                link: '/form/editor',
+                parentId: 116
+            },
+            {
+                id: 122,
+                label: 'MENUITEMS.FORMS.LIST.FILEUPLOAD',
+                link: '/form/uploads',
+                parentId: 116
+            },
+            {
+                id: 123,
+                label: 'MENUITEMS.FORMS.LIST.REPEATER',
+                link: '/form/repeater',
+                parentId: 116
+            },
+            {
+                id: 124,
+                label: 'MENUITEMS.FORMS.LIST.WIZARD',
+                link: '/form/wizard',
+                parentId: 116
+            },
+            {
+                id: 125,
+                label: 'MENUITEMS.FORMS.LIST.MASK',
+                link: '/form/mask',
+                parentId: 116
+            }
+        ]
+    },
     // {
     //     id: 126,
     //     icon: 'bx-list-ul',

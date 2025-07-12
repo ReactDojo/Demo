@@ -1,0 +1,66 @@
+<form [formGroup]="billForm" (ngSubmit)="submit()">
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <label>Bill No</label>
+      <input type="text" class="form-control" formControlName="billNo">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label>Franchisee (Vendor)</label>
+      <input type="text" class="form-control" formControlName="vendorRef">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label>Terms</label>
+      <input type="text" class="form-control" formControlName="terms">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label>Bill Date</label>
+      <input type="date" class="form-control" formControlName="billDate">
+    </div>
+    <div class="col-md-6 mb-3">
+      <label>Due Date</label>
+      <input type="date" class="form-control" formControlName="dueDate">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label>Memo</label>
+    <textarea class="form-control" formControlName="memo"></textarea>
+  </div>
+
+  <div class="mb-3">
+    <label>Line Items</label>
+    <div formArrayName="lineItems" *ngFor="let item of lineItems.controls; let i=index" [formGroupName]="i" class="mb-3 p-3 border rounded bg-light">
+      <div class="row">
+        <div class="col-md-2">
+          <label>Category</label>
+          <input type="text" class="form-control" formControlName="categoryAccountRef">
+        </div>
+        <div class="col-md-3">
+          <label>Description</label>
+          <input type="text" class="form-control" formControlName="description">
+        </div>
+        <div class="col-md-2">
+          <label>Amount</label>
+          <input type="number" class="form-control" formControlName="amount">
+        </div>
+        <div class="col-md-2">
+          <label>Sales Tax</label>
+          <input type="text" class="form-control" formControlName="salesTax">
+        </div>
+        <div class="col-md-2">
+          <label>Class</label>
+          <input type="text" class="form-control" formControlName="classRef">
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button class="btn btn-danger btn-sm" type="button" (click)="removeLineItem(i)">×</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-outline-primary btn-sm" type="button" (click)="addLineItem()">Add Line</button>
+  </div>
+
+  <button class="btn btn-success" type="submit">Save</button>
+</form>

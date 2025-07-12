@@ -1,0 +1,74 @@
+<div class="container-fluid">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title">{{ editingId ? 'Edit' : 'Add' }} Customer</h4>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="customerForm" (ngSubmit)="submitForm()">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Display Name</label>
+              <input type="text" class="form-control" formControlName="displayName" required />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Given Name</label>
+              <input type="text" class="form-control" formControlName="givenName" />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Family Name</label>
+              <input type="text" class="form-control" formControlName="familyName" />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" formControlName="primaryEmailAddr" />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Phone</label>
+              <input type="text" class="form-control" formControlName="primaryPhone" />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Company</label>
+              <input type="text" class="form-control" formControlName="companyName" />
+            </div>
+            <div class="col-12 mb-3">
+              <label class="form-label">Notes</label>
+              <textarea class="form-control" formControlName="notes"></textarea>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">{{ editingId ? 'Update' : 'Create' }}</button>
+          <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Reset</button>
+        </form>
+      </div>
+    </div>
+  
+    <div class="card mt-4">
+      <div class="card-header">
+        <h4 class="card-title">Customer List</h4>
+      </div>
+      <div class="card-body table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Display Name</th>
+              <th>Company</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of customers">
+              <td>{{ c.displayName }}</td>
+              <td>{{ c.companyName }}</td>
+              <td>{{ c.primaryEmailAddr }}</td>
+              <td>{{ c.primaryPhone }}</td>
+              <td>
+                <button class="btn btn-sm btn-warning" (click)="edit(c)">Edit</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
