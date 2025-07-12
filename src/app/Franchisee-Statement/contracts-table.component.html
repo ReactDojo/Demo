@@ -79,11 +79,11 @@
             </thead>
           
             <tbody>
-              <tr *ngFor="let account of accounts; let i = index">
-                <td>{{ getCustomerName(account.customerID) }}</td>
+              <tr *ngFor="let account of displayAccounts; let i = index">
+                <td>{{ account.customerName }}</td>
                 
-                <td><div>{{ getFrequencyName(account.frequencyID || '') }}</div>
-                  <div>{{ getFrequencyMonthly(account.frequencyID || 0) }}</div></td>
+                <td><div>{{ account.frequencyName }}</div>
+                  <div>{{ account.frequencyMonthlyMultiplier }}</div></td>
                 <td>
                   <input
                     type="number"
@@ -92,7 +92,7 @@
                     (ngModelChange)="onVisitsChange(account, $event)"
                     name="monthlyPayment-{{i}}"
                   />
-                  <small *ngIf="account.numOfVisits > getFrequencyMonthly(account.frequencyID || 0)" class="text-danger">
+                  <small *ngIf="account.numOfVisits > account.frequencyMonthlyMultiplier" class="text-danger">
                     Visits exceed maximum allowed!
                   </small>
                 </td>
@@ -143,14 +143,14 @@
                   />
                 </td>
                 <td class="text-end">
-                  {{ calculateLinePayment(account) | currency }}
+                  {{ account.linePayment | currency }}
                 </td>
                 <td class="text-end">
                   <span class="form-control-plaintext text-primary fw-semibold">
-                    {{ calculateRoyalty(account) | currency }}
+                    {{ account.calculatedRoyalty | currency }}
                   </span>
                 </td>
-                <td>{{ getMonthlyPaymentByCustomer(account.customerID) | currency }}</td>
+                <td>{{ account.promissoryCost | currency }}</td>
                 <td>
                   <button class="btn btn-success btn-sm" (click)="updateAccount(account)">Update</button>
                   <button class="btn btn-danger btn-sm" (click)="deleteAccount(account.accountID)">Delete</button>
@@ -161,15 +161,15 @@
             <tfoot class="table-light">
               <tr>
                 <th colspan="2">Totals</th>
-                <th colspan="2">Total Net Payment {{ getTotalNetPayment() | currency }}</th>
-                <th>Royalty Fee  {{ (getTotalNetPayment() * (newAccount.royaltyFee / 100)).toFixed(2) | currency }}</th>
-                <th colspan="2"> Promissary Payment - {{ getTotalMonthlyBilling() | currency }}</th>
+                <th colspan="2">Total Net Payment {{ totals.netPayment | currency }}</th>
+                <th>Royalty Fee  {{ totals.royaltyFee | currency }}</th>
+                <th colspan="2"> Promissary Payment - {{ totals.promissoryPayment | currency }}</th>
                 <th colspan="2">
-                  GST (5%): {{ getGSTDifference() | currency }}
+                  GST (5%): {{ totals.gst | currency }}
                 </th>
                 <th colspan="2">
-                  Subtotal: {{ (getTotalNetPayment() - getTotalMonthlyBilling()) - (getTotalNetPayment() * (newAccount.royaltyFee / 100)) | currency }} <br />
-                  Total + (5%): {{ (getTotalNetPayment() - getTotalMonthlyBilling()) - (getTotalNetPayment() * (newAccount.royaltyFee / 100)) + getGSTDifference()| currency }}
+                  Subtotal: {{ totals.subtotal | currency }} <br />
+                  Total + (5%): {{ totals.finalTotal | currency }}
                 </th>
               </tr>
             </tfoot>
@@ -282,7 +282,7 @@
             <tr>
               <th colspan="6">Totals</th>
               
-              <th> Promissary Payment - {{ getTotalMonthlyBilling() | currency }}</th>
+              <th> Promissary Payment - {{ totals.promissoryPayment | currency }}</th>
              
               <th colspan="1"></th>
             </tr>
