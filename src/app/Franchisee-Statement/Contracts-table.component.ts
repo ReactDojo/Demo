@@ -10,6 +10,7 @@ import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { Account } from 'src/app/models/account.model';
 import { Contract } from 'src/app/models/contract.model';
 import { Vendor } from 'src/app/models/vendor.model';
+import { MonthlyAccountTransaction } from 'src/app/models/monthly-account-transaction.model';
 import { Customer } from 'src/app/customer/customer.model';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
@@ -274,7 +275,7 @@ export class ContractsTableComponent implements OnInit {
       Line: [
         {
           DetailType: "AccountBasedExpenseLineDetail",
-          Amount: Math.abs(this.totals.promissoryPayment),
+          Amount: Math.abs(this.totals.netPayment),
           Description: "Services rendered",
           AccountBasedExpenseLineDetail: {
             AccountRef: { value: "16", name: "Subcontractors - COS" },
@@ -308,25 +309,71 @@ export class ContractsTableComponent implements OnInit {
       body: JSON.stringify(billJson)
     })
     .then(res => res.ok ? res.json() : Promise.reject(res))
-    .then(() => {
-      this.toastr.success("✅ Franchisee Bill submitted to QuickBooks");
-      const periodEndDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split("T")[0];
-      const transactionPromises = this.displayAccounts.map(account => {
-        const transaction = { ...account, periodEndDate };
-        return fetch("http://localhost/api/monthlytransactions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(transaction)
-        }).then(res => res.ok ? res.json() : Promise.reject(res));
-      });
-      return Promise.all(transactionPromises);
-    })
-    .then(() => {
-      this.toastr.success("✅ All monthly transactions saved to DB");
-    })
-    .catch(err => {
-      this.toastr.error("Something failed during QuickBooks or DB sync");
+.then(() => {
+  this.toastr.success("✅ Franchisee Bill submitted to QuickBooks");
+
+  const periodEndDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split("T")[0];
+
+  const transactionPromises = this.displayAccounts.map(account => {
+    const transaction: MonthlyAccountTransaction = {
+      transactionID: 0,
+      accountID: account.accountID,
+      customerID: account.customerID,
+      frequencyID: account.frequencyID || 0,
+      startDate: account.startDate,
+      endDate: account.endDate || null,
+      monthlyBilling: account.linePayment,
+      supplierID: account.supplierID,
+      contractID: account.contractID,
+      originalAmount: account.originalAmount,
+      daysOfWeek: account.daysOfWeek || null,
+      financedAmount: account.financedAmount,
+      productID: account.productID,
+      numOfVisits: account.numOfVisits,
+      royaltyFee: account.calculatedRoyalty,
+      monthlyPayment: account.promissoryCost,
+      runningTotal: account.linePayment,
+      periodEndDate: periodEndDate,
+      createdAt: new Date().toISOString()
+    };
+
+    return fetch("http://localhost/api/monthlytransactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(transaction)
     });
+  });
+
+  return Promise.allSettled(transactionPromises);
+})
+.then(results => {
+  const failed = results.filter(r => r.status === 'rejected');
+  const success = results.filter(r => r.status === 'fulfilled');
+
+  if (failed.length > 0) {
+    console.warn(`⚠️ Some transactions failed:`, failed);
+    this.toastr.warning(`⚠️ ${failed.length} transactions failed`);
+  } else {
+    this.toastr.success("✅ All monthly transactions saved to DB");
+  }
+
+  const contractUpdatePromises = this.displayAccounts.map(account => {
+    return this.contractService.updateContractPayment(account.contractID, account.promissoryCost).toPromise()
+      .catch(err => {
+        console.error(`❌ Failed to update contract ${account.contractID}`, err);
+        return null;
+      });
+  });
+
+  return Promise.all(contractUpdatePromises);
+})
+.then(() => {
+  this.toastr.success("✅ All contracts updated successfully");
+})
+.catch(err => {
+  console.error("❌ Final catch triggered:", err);
+  this.toastr.error("Something failed during QuickBooks or DB sync");
+});
   }
 
   loadCustomers(): void {
@@ -502,7 +549,7 @@ export class ContractsTableComponent implements OnInit {
 
   recalculateTotals(): void {
     const netPayment = this.displayAccounts.reduce((sum, acc) => sum + acc.linePayment, 0);
-    const promissoryPayment = this.displayAccounts.reduce((sum, acc) => sum + (acc.monthlyBilling || 0), 0);
+    const promissoryPayment = this.displayAccounts.reduce((sum, acc) => sum + (acc.promissoryCost || 0), 0);
     const royaltyFee = this.displayAccounts.reduce((sum, acc) => sum + acc.calculatedRoyalty, 0);
     const difference = netPayment - promissoryPayment;
     const gst = difference * 0.05;
@@ -572,6 +619,10 @@ export class ContractsTableComponent implements OnInit {
   getMonthlyPaymentByCustomer(customerId: number): number {
     const match = this.filteredContracts.find(c => c.customerID === customerId);
     return match?.monthlyPayment ?? 0;
+  }
+
+  calculateNetPayment(account: DisplayAccount): number {
+    return account.linePayment - account.calculatedRoyalty - account.promissoryCost;
   }
 
   loadTotalMonthlyFeeFromServer(supplierId: number) {

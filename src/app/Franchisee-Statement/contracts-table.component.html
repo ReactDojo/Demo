@@ -74,6 +74,7 @@
                   </span>
                 </th>
                 <th>Promissary Cost</th>
+                <th>Total Paid</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -151,6 +152,7 @@
                   </span>
                 </td>
                 <td>{{ account.promissoryCost | currency }}</td>
+                <td>{{ calculateNetPayment(account) | currency }}</td>
                 <td>
                   <button class="btn btn-success btn-sm" (click)="updateAccount(account)">Update</button>
                   <button class="btn btn-danger btn-sm" (click)="deleteAccount(account.accountID)">Delete</button>

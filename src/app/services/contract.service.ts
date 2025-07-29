@@ -34,11 +34,12 @@ export class ContractService {
     return this.http.get<Contract[]>(`${this.baseUrl}/by-vendor/${vendorId}`);
   }
   getTotalMonthlyPaymentBySupplier(supplierId: number): Observable<number> {
-    return this.http.get<{ supplierId: number; totalMonthlyPayment: number }>(
-      `http://localhost/api/contracts/${supplierId}/total-payments`
-    ).pipe(
+    return this.http.get<{ supplierId: number; totalMonthlyPayment: number }>(      `http://localhost/api/contracts/${supplierId}/total-payments`    ).pipe(
       map(res => res.totalMonthlyPayment)
     );
   }
   
+  updateContractPayment(contractID: number, amount: number): Observable<any> {
+    return this.http.put(`${this.baseUrl}/update-payment/${contractID}`, { amount });
+  }
 }
