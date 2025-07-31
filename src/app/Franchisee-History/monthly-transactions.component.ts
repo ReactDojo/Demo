@@ -29,7 +29,7 @@ export class MonthlyTransactionsComponent implements OnInit {
   vendors: Vendor[] = [];
   customers: Customer[] = [];
   transactions: MonthlyAccountTransaction[] = [];
-
+  years: number[] = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i);
   groupedTransactions: { [key: string]: MonthlyAccountTransaction[] } = {};
   groupedKeys: string[] = [];
 
@@ -42,56 +42,35 @@ export class MonthlyTransactionsComponent implements OnInit {
 
   ngOnInit(): void {
     this.filterForm = this.fb.group({
-      vendorID: [null]
+      vendorID: [null],
+      year: [new Date().getFullYear()]
     });
 
     this.vendorService.getVendors().subscribe(v => (this.vendors = v));
-    this.customerService.getCustomers().subscribe(c => (this.customers = c));
+    this.customerService.getCustomers().subscribe(customers => {
+      this.customers = customers;
+      this.customers.forEach(c => this.customerNameMap.set(Number(c.Id), c.DisplayName));
+    });
   }
 
   onVendorChange(): void {
     const vendorId = this.filterForm.get('vendorID')?.value;
-    if (!vendorId) return;
+    const year = this.filterForm.get('year')?.value;
+    if (!vendorId || !year) return;
 
     this.transactionService.getTransactionsByVendor(vendorId).subscribe(tx => {
-      this.transactions = tx.sort((a, b) =>
-        new Date(a.periodEndDate).getTime() - new Date(b.periodEndDate).getTime()
-      );
+      this.transactions = tx.filter(t => new Date(t.startDate).getFullYear() === year)
+        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
-      this.preloadCustomerNames();
       this.groupTransactions();
     });
   }
-preloadCustomerNames(): void {
-  const uniqueIds = Array.from(new Set(this.transactions.map(t => t.customerID)));
-  console.log('💡 Unique customer IDs found in transactions:', uniqueIds);
-
-  uniqueIds.forEach(id => {
-    if (!this.customerNameMap.has(id)) {
-      console.log(`🔍 Fetching customer name for ID: ${id}`);
-
-      this.customerService.getCustomer(id.toString()).subscribe({
-        next: customer => {
-          const name = customer?.DisplayName || customer?.displayName || 'Unknown';
-          console.log(`✅ Retrieved name for ID ${id}: ${name}`);
-          this.customerNameMap.set(id, name);
-        },
-        error: (err) => {
-          console.error(`❌ Failed to fetch customer for ID ${id}:`, err);
-          this.customerNameMap.set(id, 'Unknown');
-        }
-      });
-    } else {
-      console.log(`⚠️ Customer ID ${id} already cached`);
-    }
-  });
-}
 
 
   groupTransactions(): void {
     this.groupedTransactions = {};
     for (const tx of this.transactions) {
-      const date = new Date(tx.periodEndDate);
+      const date = new Date(tx.startDate);
       const key = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
 
       if (!this.groupedTransactions[key]) {
@@ -102,8 +81,8 @@ preloadCustomerNames(): void {
 
     this.groupedKeys = Object.keys(this.groupedTransactions).sort(
       (a, b) =>
-        new Date(this.groupedTransactions[a][0].periodEndDate).getTime() -
-        new Date(this.groupedTransactions[b][0].periodEndDate).getTime()
+        new Date(this.groupedTransactions[a][0].startDate).getTime() -
+        new Date(this.groupedTransactions[b][0].startDate).getTime()
     );
   }
 

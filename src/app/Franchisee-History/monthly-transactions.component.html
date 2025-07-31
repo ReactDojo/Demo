@@ -16,42 +16,56 @@
           [clearable]="false">
         </ng-select>
       </div>
+      <div class="col-md-3">
+        <label class="form-label">Select Year</label>
+        <ng-select
+          [items]="years"
+          formControlName="year"
+          (change)="onVendorChange()"
+          [clearable]="false">
+        </ng-select>
+      </div>
     </div>
   </form>
 
-  <div *ngIf="groupedKeys.length > 0">
-    <table class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>Customer</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Billing</th>
-          <th>Royalty Fee</th>
-          <th>Payment</th>
-          <th>Visits</th>
-          <th>Contract ID</th>
-        </tr>
-      </thead>
-
-      <ng-container *ngFor="let period of groupedKeys">
-       <tr class="table-primary small" style="padding: 0;">
-        <td colspan="8" class="py-1 text-primary fw-bold" style="font-size: 0.85rem;">
+  <div class="accordion" id="transactionAccordion">
+    <div *ngFor="let period of groupedKeys; let i = index" class="accordion-item">
+      <h2 class="accordion-header" [id]="'heading' + i">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#collapse' + i" aria-expanded="true" [attr.aria-controls]="'collapse' + i">
           {{ period }}
-        </td>
-      </tr>
-        <tr *ngFor="let tx of groupedTransactions[period]">
-          <td>{{ getCustomerName(tx.customerID) }}</td>
-          <td>{{ tx.startDate | date: 'yyyy-MM-dd' }}</td>
-          <td>{{ tx.endDate || '-' }}</td>
-          <td>{{ tx.monthlyBilling | currency }}</td>
-          <td>{{ tx.royaltyFee | currency }}</td>
-          <td>{{ tx.monthlyPayment | currency }}</td>
-          <td>{{ tx.numOfVisits }}</td>
-          <td>{{ tx.contractID }}</td>
-        </tr>
-      </ng-container>
-    </table>
+        </button>
+      </h2>
+      <div [id]="'collapse' + i" class="accordion-collapse collapse show" [attr.aria-labelledby]="'heading' + i" data-bs-parent="#transactionAccordion">
+        <div class="accordion-body">
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Billing</th>
+                <th>Royalty Fee</th>
+                <th>Payment</th>
+                <th>Visits</th>
+                <th>Contract ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tx of groupedTransactions[period]">
+                <td>{{ getCustomerName(tx.customerID) }}</td>
+                <td>{{ tx.startDate | date: 'yyyy-MM-dd' }}</td>
+                <td>{{ tx.endDate || '-' }}</td>
+                <td>{{ tx.monthlyBilling | currency }}</td>
+                <td>{{ tx.royaltyFee | currency }}</td>
+                <td>{{ tx.monthlyPayment | currency }}</td>
+                <td>{{ tx.numOfVisits }}</td>
+                <td>{{ tx.contractID }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="mt-4 text-end">
