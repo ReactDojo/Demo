@@ -26,6 +26,10 @@ export class ContractService {
   deleteContract(contractID: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${contractID}`);
   }
+
+  softDeleteContract(contractID: number): Observable<any> {
+    return this.http.put(`${this.baseUrl}/soft-delete/${contractID}`, {});
+  }
   
   getContractsBySupplier(supplierID: number): Observable<Contract[]> {
     return this.http.get<Contract[]>(`${this.baseUrl}/by-supplier/${supplierID}`);

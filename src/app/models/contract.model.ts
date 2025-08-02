@@ -1,5 +1,6 @@
 export interface Contract {
   contractID?: number;
+  accountID?: number;
   supplierID: number;
   customerID: number;
   productID: number;

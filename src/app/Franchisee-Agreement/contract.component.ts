@@ -67,9 +67,7 @@ export class ContractComponent implements OnInit {
     this.contractForm.get('vendorID')?.valueChanges.subscribe((supplierID: number) => {
       if (supplierID) {
         this.contractService.getContractsBySupplier(supplierID).subscribe(data => {
-          this.contracts = data;
-          console.log("contracts");
-          console.log(data);
+          this.contracts = data.filter(c => c.accountID !== 100);
         });
       } else {
         this.contracts = [];
@@ -211,19 +209,24 @@ export class ContractComponent implements OnInit {
   }
 
   deleteContract(contractID: number) {
-    if (!confirm("Are you sure you want to delete this contract?")) return;
-  
-    console.log(`🗑️ Deleting contract with ID: ${contractID}`);
-  
-    this.contractService.deleteContract(contractID).subscribe({
+    if (!confirm("Are you sure you want to mark this contract as inactive?")) return;
+
+    const contract = this.contracts.find(c => c.contractID === contractID);
+    if (!contract) {
+      this.toastr.error('Contract not found.', 'Error');
+      return;
+    }
+
+    const updatedContract: Contract = { ...contract, accountID: 100 };
+
+    this.contractService.updateContract(contractID, updatedContract).subscribe({
       next: () => {
         this.contracts = this.contracts.filter(c => c.contractID !== contractID);
-        this.toastr.success('Contract deleted successfully.', 'Deleted');
-        console.log("✅ Contract deleted.");
+        this.toastr.success('Contract marked as inactive.', 'Success');
       },
       error: (err) => {
-        console.error("❌ Failed to delete contract:", err);
-        this.toastr.error('Failed to delete contract.', 'Error');
+        console.error("Failed to update contract:", err);
+        this.toastr.error('Failed to mark contract as inactive.', 'Error');
       }
     });
   }

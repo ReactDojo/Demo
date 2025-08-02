@@ -46,4 +46,8 @@ export class AccountService {
   getAccountsByVendor(vendorId: number | string): Observable<Account[]> {
     return this.http.get<Account[]>(`${this.baseUrl}/vendor/${vendorId}`);
   }
+
+  getAccountByContractId(contractId: number): Observable<Account> {
+    return this.http.get<Account>(`${this.baseUrl}/by-contract/${contractId}`);
+  }
 }

@@ -35,7 +35,7 @@
           {{ period }}
         </button>
       </h2>
-      <div [id]="'collapse' + i" class="accordion-collapse collapse show" [attr.aria-labelledby]="'heading' + i" data-bs-parent="#transactionAccordion">
+      <div [id]="'collapse' + i" class="accordion-collapse collapse show" [attr.aria-labelledby]="'heading' + i">
         <div class="accordion-body">
           <table class="table table-bordered table-striped">
             <thead>
@@ -44,7 +44,7 @@
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Billing (col)MonthlyBilling</th>
-                <th>Royalty Fee</th>
+                <th>Royalty Fee (col)RoyaltyFee</th>
                 <th>Payment</th>
                 <th>Visits</th>
                 <th>Contract ID</th>
@@ -67,8 +67,160 @@
       </div>
     </div>
   </div>
-
+  <div class="table-responsive mt-4">
+                    
+                    <table class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Contract ID</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Frequency</th>
+                                <th>Customer Monthly Amount</th>
+                                <th>Purchase Price</th>
+                                <th>Down Payment</th>
+                                <th>Financed Amount</th>
+                                
+                                <th>Monthly Payments</th>
+                                <th>Running Total</th>
+                                <th>Number of Payments Left</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngIf="contracts.length === 0">
+                                <td colspan="9" class="text-center text-muted">No contracts available for this vendor.
+                                </td>
+                            </tr>
+                            <tr *ngFor="let contract of contracts">
+                                <td>{{ contract.contractID }}</td>
+                              
+                                <!-- Map customerID to display name -->
+                                <td>{{ getCustomerName(contract.customerID) }}</td>
+                              
+                                <!-- Map productID to duration -->
+                                <td>{{ getProductName(contract.productID) }}</td>
+                              
+                                <td>{{ contract.startDate | date: 'yyyy-MM-dd' }}</td>
+                                <td>{{ contract.endDate | date: 'yyyy-MM-dd' }}</td>
+                              
+                                <!-- Map frequencyID to readable description -->
+                                <td>{{ getFrequencyName(contract.frequencyID) }}</td>
+                                <th>{{ contract.customerMonthlyAmount | currency }}</th>
+                              
+                                
+                                <td>{{ contract.originalAmount | currency }}</td>
+                                <td>{{ (contract.originalAmount - contract.financedAmount) / getProductPrice(contract.productID) | currency }}</td>
+                                <td>{{ contract.financedAmount | currency }}</td>
+                                
+                                <td>
+                                    {{ contract.monthlyPayment | currency }}
+                                  </td>
+                                <td>{{ contract.runningTotal | currency }}</td>
+                                <td>{{ contract.paymentOnProduct }}</td>
+                                <td>{{ contract.notes }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" (click)="deleteContract(contract.contractID)">
+                                      Delete
+                                    </button>
+                                  </td>
+                              </tr>
+                              
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                              <th colspan="6">Totals</th>
+                              <th>{{ getTotalOriginalAmount() | currency }}</th>
+                              <th>{{ getTotalFinancedAmount() | currency }}</th>
+                              <th></th> <!-- For Original - Financed column, usually not totaled -->
+                              <th>{{ getTotalRunningTotal() | currency }}</th>
+                              <th colspan="3"></th> <!-- Empty for Payments, Notes, Actions -->
+                            </tr>
+                          </tfoot>
+                          
+                    </table>
+                </div>
   <div class="mt-4 text-end">
-    <button class="btn btn-primary" (click)="printPdf()">Print to PDF</button>
+  
   </div>
+</div>
+<div class="table-responsive mt-4">
+                    
+  <table class="table table-hover table-bordered align-middle mb-0">
+      <thead class="table-light">
+          <tr>
+              <th>Contract ID</th>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Frequency</th>
+              <th>Customer Monthly Amount</th>
+              <th>Purchase Price</th>
+              <th>Down Payment</th>
+              <th>Financed Amount</th>
+              
+              <th>Monthly Payments</th>
+              <th>Running Total</th>
+              <th>Number of Payments Left</th>
+              <th>Notes</th>
+              <th>Actions</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr *ngIf="contracts.length === 0">
+              <td colspan="9" class="text-center text-muted">No contracts available for this vendor.
+              </td>
+          </tr>
+          <tr *ngFor="let contract of contracts">
+              <td>{{ contract.contractID }}</td>
+            
+              <!-- Map customerID to display name -->
+              <td>{{ getCustomerName(contract.customerID) }}</td>
+            
+              <!-- Map productID to duration -->
+              <td>{{ getProductName(contract.productID) }}</td>
+            
+              <td>{{ contract.startDate | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ contract.endDate | date: 'yyyy-MM-dd' }}</td>
+            
+              <!-- Map frequencyID to readable description -->
+              <td>{{ getFrequencyName(contract.frequencyID) }}</td>
+              <th>{{ contract.customerMonthlyAmount | currency }}</th>
+            
+              
+              <td>{{ contract.originalAmount | currency }}</td>
+              <td>{{ (contract.originalAmount - contract.financedAmount) / getProductPrice(contract.productID) | currency }}</td>
+              <td>{{ contract.financedAmount | currency }}</td>
+              
+              <td>
+                  {{ contract.monthlyPayment | currency }}
+                </td>
+              <td>{{ contract.runningTotal | currency }}</td>
+              <td>{{ contract.paymentOnProduct }}</td>
+              <td>{{ contract.notes }}</td>
+              <td>
+                  <button class="btn btn-sm btn-danger" (click)="deleteContract(contract.contractID)">
+                    Delete
+                  </button>
+                </td>
+            </tr>
+            
+      </tbody>
+      <tfoot class="table-light">
+          <tr>
+            <th colspan="6">Totals</th>
+            <th>{{ getTotalOriginalAmount() | currency }}</th>
+            <th>{{ getTotalFinancedAmount() | currency }}</th>
+            <th></th> <!-- For Original - Financed column, usually not totaled -->
+            <th>{{ getTotalRunningTotal() | currency }}</th>
+            <th colspan="3"></th> <!-- Empty for Payments, Notes, Actions -->
+          </tr>
+        </tfoot>
+        
+  </table>
+    <button class="btn btn-primary" (click)="printPdf()">Print to PDF</button>
 </div>
