@@ -36,6 +36,8 @@ export class MonthlyTransactionsComponent implements OnInit {
   customers: Customer[] = [];
   transactions: MonthlyAccountTransaction[] = [];
   contracts: Contract[] = [];
+  activeContracts: Contract[] = [];
+  inactiveContracts: Contract[] = [];
   products: Product[] = [];
   frequencies: Frequency[] = [];
   years: number[] = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i);
@@ -81,6 +83,8 @@ export class MonthlyTransactionsComponent implements OnInit {
 
     this.contractService.getContractsBySupplier(vendorId).subscribe(contracts => {
       this.contracts = contracts;
+      this.activeContracts = contracts.filter(c => c.accountID !== 100);
+      this.inactiveContracts = contracts.filter(c => c.accountID === 100);
     });
   }
 
@@ -136,33 +140,66 @@ export class MonthlyTransactionsComponent implements OnInit {
   }
 
   getTotalOriginalAmount(): number {
-    return this.contracts.reduce((total, c) => total + (c.originalAmount || 0), 0);
+    return this.activeContracts.reduce((total, c) => total + (c.originalAmount || 0), 0);
   }
   
   getTotalFinancedAmount(): number {
-    return this.contracts.reduce((total, c) => total + (c.financedAmount || 0), 0);
+    return this.activeContracts.reduce((total, c) => total + (c.financedAmount || 0), 0);
   }
   
   getTotalRunningTotal(): number {
-    return this.contracts.reduce((total, c) => total + (c.runningTotal || 0), 0);
+    return this.activeContracts.reduce((total, c) => total + (c.runningTotal || 0), 0);
   }
 
+  // printPdf(): void {
+  //   const content = document.getElementById('transaction-summary');
+  //   if (!content) return;
+
+  //   window.scrollTo(0, 0);
+  //   html2canvas(content, { scale: 2 }).then(canvas => {
+  //     const imgData = canvas.toDataURL('image/png');
+  //     const pdf = new jsPDF('p', 'mm', 'a4');
+  //     const imgProps = pdf.getImageProperties(imgData);
+  //     const pdfWidth = pdf.internal.pageSize.getWidth();
+  //     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+  //     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+  //     pdf.save('Franchisee-Transactions.pdf');
+  //   });
+  // }
   printPdf(): void {
-    const content = document.getElementById('transaction-summary');
-    if (!content) return;
+  const content = document.getElementById('transaction-summary');
+  if (!content) return;
 
-    window.scrollTo(0, 0);
-    html2canvas(content, { scale: 2 }).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  window.scrollTo(0, 0);
+  html2canvas(content, { scale: 2 }).then(canvas => {
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('Franchisee-Transactions.pdf');
-    });
-  }
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // Add first page
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pdfHeight;
+
+    // Add more pages if needed
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+    }
+
+    pdf.save('Franchisee-Transactions.pdf');
+  });
+}
 }
 // This code is part of a larger Angular application that manages monthly transactions for franchisees.
 // It includes a component that allows users to filter transactions by vendor, group them by month, 

@@ -402,9 +402,9 @@ export class ContractsTableComponent implements OnInit {
       const monthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
 
       this.newAccount.royaltyFee = royalty.royaltyFee;
-      this.filteredContracts = contracts;
+      this.filteredContracts = contracts.filter(c => c.accountID !== 100);
 
-      this.displayAccounts = accounts.map(account => {
+      this.displayAccounts = accounts.filter(a => this.filteredContracts.some(c => c.contractID === a.contractID)).map(account => {
         const displayAccount = {
           ...account,
           startDate: monthStart,

@@ -67,8 +67,9 @@
       </div>
     </div>
   </div>
+  
   <div class="table-responsive mt-4">
-                    
+                     <h5><b>Active Contracts</b></h5>
                     <table class="table table-hover table-bordered align-middle mb-0">
                         <thead class="table-light">
                             <tr>
@@ -91,11 +92,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngIf="contracts.length === 0">
-                                <td colspan="9" class="text-center text-muted">No contracts available for this vendor.
+                            <tr *ngIf="activeContracts.length === 0">
+                                <td colspan="9" class="text-center text-muted">No active contracts available for this vendor.
                                 </td>
                             </tr>
-                            <tr *ngFor="let contract of contracts">
+                            <tr *ngFor="let contract of activeContracts">
                                 <td>{{ contract.contractID }}</td>
                               
                                 <!-- Map customerID to display name -->
@@ -143,12 +144,8 @@
                           
                     </table>
                 </div>
-  <div class="mt-4 text-end">
-  
-  </div>
-</div>
 <div class="table-responsive mt-4">
-                    
+  <h5><b>Inactive Contracts</b></h5>
   <table class="table table-hover table-bordered align-middle mb-0">
       <thead class="table-light">
           <tr>
@@ -167,15 +164,14 @@
               <th>Running Total</th>
               <th>Number of Payments Left</th>
               <th>Notes</th>
-              <th>Actions</th>
           </tr>
       </thead>
       <tbody>
-          <tr *ngIf="contracts.length === 0">
-              <td colspan="9" class="text-center text-muted">No contracts available for this vendor.
+          <tr *ngIf="inactiveContracts.length === 0">
+              <td colspan="9" class="text-center text-muted">No inactive contracts available for this vendor.
               </td>
           </tr>
-          <tr *ngFor="let contract of contracts">
+          <tr *ngFor="let contract of inactiveContracts">
               <td>{{ contract.contractID }}</td>
             
               <!-- Map customerID to display name -->
@@ -202,25 +198,12 @@
               <td>{{ contract.runningTotal | currency }}</td>
               <td>{{ contract.paymentOnProduct }}</td>
               <td>{{ contract.notes }}</td>
-              <td>
-                  <button class="btn btn-sm btn-danger" (click)="deleteContract(contract.contractID)">
-                    Delete
-                  </button>
-                </td>
             </tr>
             
       </tbody>
-      <tfoot class="table-light">
-          <tr>
-            <th colspan="6">Totals</th>
-            <th>{{ getTotalOriginalAmount() | currency }}</th>
-            <th>{{ getTotalFinancedAmount() | currency }}</th>
-            <th></th> <!-- For Original - Financed column, usually not totaled -->
-            <th>{{ getTotalRunningTotal() | currency }}</th>
-            <th colspan="3"></th> <!-- Empty for Payments, Notes, Actions -->
-          </tr>
-        </tfoot>
-        
   </table>
+</div>
+  <div class="mt-4 text-end">
     <button class="btn btn-primary" (click)="printPdf()">Print to PDF</button>
+  </div>
 </div>
