@@ -558,7 +558,7 @@ export class ContractsTableComponent implements OnInit {
     const netPayment = this.displayAccounts.reduce((sum, acc) => sum + acc.linePayment, 0);
     const promissoryPayment = this.displayAccounts.reduce((sum, acc) => sum + (acc.promissoryCost || 0), 0);
     const royaltyFee = this.displayAccounts.reduce((sum, acc) => sum + acc.calculatedRoyalty, 0);
-    const difference = netPayment - promissoryPayment;
+    const difference = netPayment - promissoryPayment - royaltyFee;
     const gst = difference * 0.05;
 
     this.totals = {
@@ -566,8 +566,8 @@ export class ContractsTableComponent implements OnInit {
       promissoryPayment,
       royaltyFee,
       gst,
-      subtotal: difference - royaltyFee,
-      finalTotal: (difference - royaltyFee) + gst
+      subtotal: difference,
+      finalTotal: (difference) + gst
     };
   }
 
@@ -616,6 +616,7 @@ export class ContractsTableComponent implements OnInit {
     forkJoin(saveRequests).subscribe({
       next: () => {
         this.toastr.success('✅ All accounts saved successfully.');
+        this.submitFranchiseeBill();
       },
       error: () => {
         this.toastr.error('Failed to save accounts.');

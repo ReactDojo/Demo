@@ -83,7 +83,16 @@ export class MonthlyTransactionsComponent implements OnInit {
       this.activeContracts = contracts.filter(c => c.accountID !== 100);
       this.inactiveContracts = contracts.filter(c => c.accountID === 100);
 
-      this.transactions = transactions.filter(t => new Date(t.startDate).getFullYear() === year)
+      const processedTransactions = transactions.map(tx => {
+        const contract = this.contracts.find(c => c.contractID === tx.contractID);
+        return {
+          ...tx,
+          customermonthlyamount: contract?.customerMonthlyAmount || 0
+        };
+      });
+
+      this.transactions = processedTransactions
+        .filter(t => new Date(t.startDate).getFullYear() === year)
         .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
       this.groupTransactions();
@@ -115,8 +124,15 @@ export class MonthlyTransactionsComponent implements OnInit {
   }
 
   getCustomerMonthlyAmount(contractID: number): number {
+    console.log(`Searching for contractID: ${contractID} in this.contracts:`, this.contracts);
     const contract = this.contracts.find(c => c.contractID === contractID);
-    return contract?.customermonthlyamount || 0;
+    if (contract) {
+      console.log(`Found contract:`, contract);
+      return contract.customerMonthlyAmount || 0;
+    } else {
+      console.log(`Contract with ID ${contractID} NOT FOUND.`);
+      return 0;
+    }
   }
 
   getProductName(id: number): string {

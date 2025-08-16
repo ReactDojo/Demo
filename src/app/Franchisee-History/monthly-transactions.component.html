@@ -112,7 +112,7 @@
                               
                                 <!-- Map frequencyID to readable description -->
                                 <td>{{ getFrequencyName(contract.frequencyID) }}</td>
-                                <th>{{ contract.customerMonthlyAmount | currency }}</th>
+                                <th>{{ getCustomerMonthlyAmount(contract.contractID) | currency }}</th>
                               
                                 
                                 <td>{{ contract.originalAmount | currency }}</td>
@@ -187,7 +187,7 @@
             
               <!-- Map frequencyID to readable description -->
               <td>{{ getFrequencyName(contract.frequencyID) }}</td>
-              <th>{{ contract.customerMonthlyAmount | currency }}</th>
+              <th>{{ getCustomerMonthlyAmount(contract.contractID) | currency }}</th>
             
               
               <td>{{ contract.originalAmount | currency }}</td>

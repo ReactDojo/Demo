@@ -16,5 +16,6 @@ export interface Contract {
   daysOfWeek?: string;
   downpayment?: number;
   customermonthlyamount?:number;
+  customerMonthlyAmount?:number;
   monthlyPayment?: number;
 }
