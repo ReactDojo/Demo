@@ -312,6 +312,13 @@ export class ContractsTableComponent implements OnInit {
 .then(() => {
   this.toastr.success("✅ Franchisee Bill submitted to QuickBooks");
 
+  const contractUpdatePromises = this.filteredContracts.map(contract => {
+    const updatedContract = { ...contract };
+    updatedContract.paymentOnProduct = (updatedContract.paymentOnProduct || 0) - 1;
+    updatedContract.runningTotal = (updatedContract.runningTotal || 0) - (updatedContract.monthlyPayment || 0);
+    return this.contractService.updateContract(updatedContract.contractID, updatedContract).toPromise();
+  });
+
   const periodEndDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split("T")[0];
 
   const transactionPromises = this.displayAccounts.map(account => {
