@@ -15,6 +15,7 @@ import { Contract } from '../models/contract.model';
 import { ProductService } from '../services/product.service';
 import { FrequencyService } from '../services/frequency.service';
 import { Product } from '../models/product.model';
+import { forkJoin } from 'rxjs';
 import { Frequency } from '../models/frequency.model';
 
 @Component({
@@ -74,17 +75,18 @@ export class MonthlyTransactionsComponent implements OnInit {
     const year = this.filterForm.get('year')?.value;
     if (!vendorId || !year) return;
 
-    this.transactionService.getTransactionsByVendor(vendorId).subscribe(tx => {
-      this.transactions = tx.filter(t => new Date(t.startDate).getFullYear() === year)
-        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-
-      this.groupTransactions();
-    });
-
-    this.contractService.getContractsBySupplier(vendorId).subscribe(contracts => {
+    forkJoin({
+      transactions: this.transactionService.getTransactionsByVendor(vendorId),
+      contracts: this.contractService.getContractsBySupplier(vendorId)
+    }).subscribe(({ transactions, contracts }) => {
       this.contracts = contracts;
       this.activeContracts = contracts.filter(c => c.accountID !== 100);
       this.inactiveContracts = contracts.filter(c => c.accountID === 100);
+
+      this.transactions = transactions.filter(t => new Date(t.startDate).getFullYear() === year)
+        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+      this.groupTransactions();
     });
   }
 
@@ -110,6 +112,11 @@ export class MonthlyTransactionsComponent implements OnInit {
 
   getCustomerName(customerId: number): string {
   return this.customerNameMap.get(customerId) || 'Loading...';
+  }
+
+  getCustomerMonthlyAmount(contractID: number): number {
+    const contract = this.contracts.find(c => c.contractID === contractID);
+    return contract?.customermonthlyamount || 0;
   }
 
   getProductName(id: number): string {

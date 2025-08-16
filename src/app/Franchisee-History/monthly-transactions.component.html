@@ -43,6 +43,7 @@
                 <th>Customer</th>
                 <th>Start Date</th>
                 <th>End Date</th>
+                <th>Customer Monthly Amount</th>
                 <th>Billing (col)MonthlyBilling</th>
                 <th>Royalty Fee (col)RoyaltyFee</th>
                 <th>Payment</th>
@@ -54,7 +55,8 @@
               <tr *ngFor="let tx of groupedTransactions[period]">
                 <td>{{ getCustomerName(tx.customerID) }}</td>
                 <td>{{ tx.startDate | date: 'yyyy-MM-dd' }}</td>
-                <td>{{ tx.endDate || '-' }}</td>
+                <td>{{ tx.endDate | date: 'yyyy-MM-dd' || '-' }}</td>
+                <td>{{ getCustomerMonthlyAmount(tx.contractID) | currency }}</td>
                 <td>{{ tx.monthlyBilling | currency }}</td>
                 <td>{{ tx.royaltyFee | currency }}</td>
                 <td>{{ tx.monthlyPayment | currency }}</td>

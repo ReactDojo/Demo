@@ -80,10 +80,11 @@ export class ContractComponent implements OnInit {
       const product = this.products.find(p => p.productID === values.productID);
       const initialPayments = values.initialPaymentsMade ?? 0;
       const duration = product?.durationMonths ?? 0;
-  
+      console.log("🔄 duration", duration);
+      
       const adjustedPayments = Math.max(duration - initialPayments, 0);
-      const calculatedMonthly = adjustedPayments > 0 ? financedAmount / adjustedPayments : 0;
-      const calculatedRunningTotal = (calculatedMonthly * adjustedPayments) - (initialPayments * calculatedMonthly);
+      const calculatedMonthly = adjustedPayments > 0 ? financedAmount / duration : 0;
+      const calculatedRunningTotal = (calculatedMonthly * adjustedPayments);
   
       // Update the form fields (but suppress further event emission to avoid infinite loop)
       this.contractForm.patchValue({
