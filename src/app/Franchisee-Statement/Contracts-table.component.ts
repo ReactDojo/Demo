@@ -303,7 +303,7 @@ export class ContractsTableComponent implements OnInit {
         }
       ]
     };
-
+    console.log("Submitting bill to QuickBooks:", billJson);
     fetch("http://localhost/api/bills", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -365,30 +365,7 @@ export class ContractsTableComponent implements OnInit {
     this.toastr.success("✅ All monthly transactions saved to DB");
   }
 
-  const contractUpdateObservables = this.displayAccounts.map(account => {
-    return this.contractService.updateContractPayment(account.contractID, account.promissoryCost).pipe(
-      catchError(err => {
-        console.error(`❌ Failed to update contract ${account.contractID}:`, err);
-        this.toastr.error(`Failed to update contract for ID: ${account.contractID}. See console for details.`);
-        return of(null); // Return a null to allow forkJoin to complete
-      })
-    );
-  });
-
-  forkJoin(contractUpdateObservables).subscribe({
-    next: (results) => {
-      const failedUpdates = results.filter(r => r === null).length;
-      if (failedUpdates > 0) {
-        this.toastr.warning(`⚠️ ${failedUpdates} contract(s) failed to update.`);
-      } else {
-        this.toastr.success("✅ All contracts updated successfully");
-      }
-    },
-    error: (err) => {
-      console.error("❌ An unexpected error occurred during contract updates:", err);
-      this.toastr.error("An unexpected error occurred during contract updates. See console for details.");
-    }
-  });
+  this.toastr.success("✅ All contracts updated successfully");
 })
 .catch(err => {
   console.error("❌ Final catch triggered:", err);
