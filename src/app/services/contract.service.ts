@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Contract } from '../models/contract.model';
-import { map, Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { Account } from '../models/account.model';
 
 
@@ -43,7 +44,15 @@ export class ContractService {
     );
   }
   
-  updateContractPayment(contractID: number, amount: number): Observable<any> {
-    return this.http.put(`${this.baseUrl}/update-payment/${contractID}`, { amount });
+  updateContractPayment(id: number, amount: number): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}`, { amount })
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  private handleError(error: any) {
+    console.error('An error occurred:', error);
+    return throwError(() => new Error('Something bad happened; please try again later.'));
   }
 }

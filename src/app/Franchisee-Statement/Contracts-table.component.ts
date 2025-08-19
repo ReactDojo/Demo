@@ -17,7 +17,8 @@ import { CommonModule } from '@angular/common';
 import { Product } from '../models/product.model';
 import { Frequency } from '../models/frequency.model';
 import { RoyaltyService } from '../Royalty/royalty.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import html2pdf from 'html2pdf.js';
@@ -364,22 +365,47 @@ export class ContractsTableComponent implements OnInit {
     this.toastr.success("✅ All monthly transactions saved to DB");
   }
 
-  const contractUpdatePromises = this.displayAccounts.map(account => {
-    return this.contractService.updateContractPayment(account.contractID, account.promissoryCost).toPromise()
-      .catch(err => {
-        console.error(`❌ Failed to update contract ${account.contractID}`, err);
-        return null;
-      });
+  const contractUpdateObservables = this.displayAccounts.map(account => {
+    return this.contractService.updateContractPayment(account.contractID, account.promissoryCost).pipe(
+      catchError(err => {
+        console.error(`❌ Failed to update contract ${account.contractID}:`, err);
+        this.toastr.error(`Failed to update contract for ID: ${account.contractID}. See console for details.`);
+        return of(null); // Return a null to allow forkJoin to complete
+      })
+    );
   });
 
-  return Promise.all(contractUpdatePromises);
-})
-.then(() => {
-  this.toastr.success("✅ All contracts updated successfully");
+  forkJoin(contractUpdateObservables).subscribe({
+    next: (results) => {
+      const failedUpdates = results.filter(r => r === null).length;
+      if (failedUpdates > 0) {
+        this.toastr.warning(`⚠️ ${failedUpdates} contract(s) failed to update.`);
+      } else {
+        this.toastr.success("✅ All contracts updated successfully");
+      }
+    },
+    error: (err) => {
+      console.error("❌ An unexpected error occurred during contract updates:", err);
+      this.toastr.error("An unexpected error occurred during contract updates. See console for details.");
+    }
+  });
 })
 .catch(err => {
   console.error("❌ Final catch triggered:", err);
-  this.toastr.error("Something failed during QuickBooks or DB sync");
+  if (err instanceof Response) {
+    err.json().then(body => {
+      console.error("Error response from QuickBooks API:", body);
+      this.toastr.error("QuickBooks API returned an error. See console for details.");
+    }).catch(e => {
+      console.error("Could not parse error response as JSON:", e);
+      err.text().then(text => {
+        console.error("Error response as text:", text);
+        this.toastr.error("QuickBooks API returned a non-JSON error. See console for details.");
+      });
+    });
+  } else {
+    this.toastr.error("Something failed during QuickBooks or DB sync. See console for details.");
+  }
 });
   }
 
