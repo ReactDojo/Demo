@@ -16,6 +16,10 @@ export class ContractService {
     return this.http.get<Contract[]>(this.baseUrl);
   }
 
+  getContract(id: number): Observable<Contract> {
+    return this.http.get<Contract>(`${this.baseUrl}/${id}`);
+  }
+
   createContract(data: Contract): Observable<any> {
     return this.http.post(this.baseUrl, data);
   }

@@ -3,22 +3,23 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Contract } from '../../app/models/contract.model';
-import { Account } from '../../app/models/account.model';
-import { Frequency } from '../../app/models/frequency.model';
-import { Vendor } from '../../app/models/vendor.model';
-import { ContractService } from '../../app/services/contract.service';
-import { AccountService } from '../../app/services/account.service';
-import { FrequencyService } from '../../app/services/frequency.service';
-import { VendorService } from '../../app/services/vendor.service';
+import { Contract } from '../models/contract.model';
+import { Account } from '../models/account.model';
+import { Frequency } from '../models/frequency.model';
+import { Vendor } from '../models/vendor.model';
+import { ContractService } from '../services/contract.service';
+import { AccountService } from '../services/account.service';
+import { FrequencyService } from '../services/frequency.service';
+import { VendorService } from '../services/vendor.service';
 import { CustomerService } from '../services/customer.service';
-import { ProductService } from '../../app/services/product.service';
+import { ProductService } from '../services/product.service';
 import { Customer } from '../customer/customer.model';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ToastrModule } from 'ngx-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrService } from 'ngx-toastr';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Observable, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-contract',
@@ -26,9 +27,10 @@ import { Router } from '@angular/router';
   imports: [CommonModule, 
     ReactiveFormsModule, 
     FormsModule, NgSelectModule,ToastrModule,],
-  templateUrl: './contract.component.html'
+  templateUrl: './contract-edit.component.html'
 })
-export class ContractComponent implements OnInit {
+export class ContractEditComponent implements OnInit {
+  contractId: number | null = null;
   daysOfWeek: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   selectedDays: string[] = [];
   daySelectionError: string = '';
@@ -53,17 +55,45 @@ export class ContractComponent implements OnInit {
     private vendorService: VendorService,
     private productService: ProductService,
     private toastr: ToastrService,
+    private route: ActivatedRoute,
     private router: Router,
     
   ) {}
 
   ngOnInit(): void {
     this.initForm();
-    this.loadCustomers();
-    this.loadVendors();
-    this.loadFrequencies();
-    this.loadProducts();
-    
+
+    const dataSources = {
+      customers: this.customerService.getCustomers(),
+      vendors: this.vendorService.getVendors(),
+      frequencies: this.frequencyService.getFrequencies(),
+      products: this.productService.getProducts()
+    };
+
+    forkJoin(dataSources).subscribe({
+      next: (data: any) => {
+        this.customers = data.customers;
+        this.vendors = data.vendors;
+        this.frequencies = Array.isArray(data.frequencies) ? data.frequencies : [];
+        this.products = Array.isArray(data.products) ? data.products : [];
+
+        this.route.paramMap.subscribe(params => {
+          const vendorId = params.get('vendorId');
+          const contractId = params.get('contractId');
+
+          if (vendorId && contractId) {
+            this.contractId = +contractId;
+            this.loadContractFromVendorList(+vendorId, +contractId);
+          } else {
+            this.toastr.info('Creating a new contract.', 'Info');
+          }
+        });
+      },
+      error: (err) => {
+        this.toastr.error('Failed to load essential data. Please try again later.', 'Error');
+        console.error(err);
+      }
+    });
 
     // Load contracts when vendorID changes
     this.contractForm.get('vendorID')?.valueChanges.subscribe((supplierID: number) => {
@@ -83,25 +113,71 @@ export class ContractComponent implements OnInit {
       const initialPayments = values.initialPaymentsMade ?? 0;
       const duration = product?.durationMonths ?? 0;
       console.log("🔄 duration", duration);
-      
+
       const adjustedPayments = Math.max(duration - initialPayments, 0);
       const calculatedMonthly = adjustedPayments > 0 ? financedAmount / duration : 0;
       const calculatedRunningTotal = (calculatedMonthly * adjustedPayments);
-  
-      // Update the form fields (but suppress further event emission to avoid infinite loop)
+
       this.contractForm.patchValue({
         downpayment: originalAmount - financedAmount,
         monthlyAmount: calculatedMonthly
       }, { emitEvent: false });
-  
-      // Update view-bound variables
+
       this.runningTotal = calculatedRunningTotal;
       this.adjustedPayments = adjustedPayments;
     });
   }
 
-  editContract(vendorId: number, contractId: number): void {
-    this.router.navigate(['/form/Franchisee-Agreement-Edit', vendorId, contractId]);
+  loadContractFromVendorList(vendorId: number, contractId: number): void {
+    this.contractService.getContractsBySupplier(vendorId).subscribe({
+      next: (contracts) => {
+        const contract = contracts.find(c => c.contractID === contractId);
+        if (contract) {
+          let formData: any = {};
+          if (contract.contractData) {
+            try {
+              formData = JSON.parse(contract.contractData);
+            } catch (e) {
+              console.error('Error parsing contractData:', e);
+              formData = {};
+            }
+          }
+
+          const vendor = this.vendors.find(v => v.vendorID === contract.supplierID);
+          const customer = this.customers.find(c => c.Id === contract.customerID.toString());
+
+          this.contractForm.patchValue({
+            vendorID: vendor ? vendor.Id : null,
+            customerID: customer ? customer.Id : null,
+            productID: contract.productID,
+            frequencyID: contract.frequencyID,
+            startDate: contract.startDate ? new Date(contract.startDate).toISOString().split('T')[0] : '',
+            endDate: contract.endDate ? new Date(contract.endDate).toISOString().split('T')[0] : '',
+            originalAmount: contract.originalAmount,
+            financedAmount: contract.financedAmount,
+            notes: contract.notes,
+            customerMonthlyAmount: formData.customerMonthlyAmount || contract.customerMonthlyAmount || null,
+            initialPaymentsMade: formData.initialPaymentsMade || null,
+            downpayment: formData.downpayment || null,
+            monthlyAmount: formData.monthlyAmount || null,
+            daysOfWeek: formData.daysOfWeek || ''
+          });
+          
+          this.contractForm.get('vendorID')?.disable();
+
+          this.selectedDays = (formData.daysOfWeek || contract.daysOfWeek || '').split(',').filter(d => d);
+          this.validateDaysSelection();
+          
+          this.toastr.success('Contract loaded successfully.', 'Success');
+        } else {
+          this.toastr.error(`Contract with ID ${contractId} not found for this vendor.`, 'Error');
+        }
+      },
+      error: (err) => {
+        console.error(`Error loading contracts for vendor with ID ${vendorId}:`, err);
+        this.toastr.error(`Failed to load contracts for vendor with ID ${vendorId}.`, 'Error');
+      }
+    });
   }
 
   initForm() {
@@ -114,7 +190,7 @@ export class ContractComponent implements OnInit {
       endDate: ['', Validators.required],
       originalAmount: ['', Validators.required],
       financedAmount: ['', Validators.required],
-      customermonthlyamount: ['', Validators.required],
+      customerMonthlyAmount: ['', Validators.required],
       downpayment: ['', Validators.required],
       monthlyAmount: ['', Validators.required],
       initialPaymentsMade: [null], 
@@ -259,7 +335,7 @@ export class ContractComponent implements OnInit {
     return this.frequencies.find(f => f.frequencyID == id)?.description ?? 'Unknown';
   }
 
-  submitForm() {
+  saveContract() {
     console.log("✅ Form submitted.");
     this.validateDaysSelection();
   
@@ -279,86 +355,66 @@ export class ContractComponent implements OnInit {
   
     this.submitting = true;
   
-    const form = this.contractForm.value;
+    const form = this.contractForm.getRawValue(); // Use getRawValue() to get disabled vendorID
+    
+    // Find the full vendor and customer objects
+    const selectedVendor = this.vendors.find(v => v.Id === form.vendorID);
+    const selectedCustomer = this.customers.find(c => c.Id === form.customerID);
+
+    if (!selectedVendor || !selectedCustomer) {
+        this.toastr.error('Could not find selected vendor or customer.', 'Error');
+        this.submitting = false;
+        return;
+    }
+
     const selectedProduct = this.products.find(p => p.productID === form.productID);
     const originalPaymentCount = selectedProduct?.durationMonths || 0;
     const initialPaymentsMade = form.initialPaymentsMade || 0;
     const adjustedPayments = originalPaymentCount - initialPaymentsMade;
-  
-    const downpayment = form.originalAmount - form.financedAmount;
-  
-    // Calculate customer monthly amount (monthlyBilling)
-    const monthlyBilling = adjustedPayments > 0
-      ? form.financedAmount / adjustedPayments
-      : 0;
-  
+    const monthlyBilling = adjustedPayments > 0 ? form.financedAmount / adjustedPayments : 0;
     const runningTotal = monthlyBilling * adjustedPayments;
-    const adjustedFinancedAmount = runningTotal;
-  
-    // Contract payload
+
+    // Contract payload with correct numeric IDs
     const contractPayload: Contract = {
-      supplierID: form.vendorID,
-      customerID: form.customerID,
+      contractID: this.contractId || undefined,
+      supplierID: selectedVendor.vendorID, // Use the numeric ID
+      customerID: Number(selectedCustomer.Id), // Use the numeric ID
       productID: form.productID,
       frequencyID: form.frequencyID,
       startDate: form.startDate,
       endDate: form.endDate,
       originalAmount: form.originalAmount,
       downpayment: form.originalAmount - form.financedAmount,
-      customermonthlyamount: this.contractForm.value.customermonthlyamount,
-      paymentOnProduct: this.adjustedPayments, // ✅ <-- from live calc
+      customerMonthlyAmount: this.contractForm.value.customerMonthlyAmount,
+      paymentOnProduct: this.adjustedPayments,
       financedAmount: form.financedAmount,
-      runningTotal: this.runningTotal,         // ✅ <-- from live calc
+      runningTotal: this.runningTotal,
       daysOfWeek: form.daysOfWeek,
-      contractData: form,
+      contractData: JSON.stringify(form), // Save form as a JSON string
       notes: form.notes,
-      monthlyPayment: form.financedAmount /selectedProduct.durationMonths //this.contractForm.value.monthlyAmount
+      monthlyPayment: form.financedAmount / (selectedProduct?.durationMonths || 1)
     };
-    
   
     console.log("📦 Contract payload:", contractPayload);
   
-    this.contractService.createContract(contractPayload).subscribe({
-      next: contract => {
+    let contractObservable: Observable<any>;
+
+    if (this.contractId) {
+      contractObservable = this.contractService.updateContract(this.contractId, contractPayload);
+    } else {
+      contractObservable = this.contractService.createContract(contractPayload);
+    }
+
+    contractObservable.subscribe({
+      next: (contract) => {
         console.log("✅ Contract saved:", contract);
-  
-        const accountPayload: Account = {
-          customerID: contract.customerID,
-          supplierID: contract.supplierID,
-          contractID: contract.contractID!,
-          frequencyID: contract.frequencyID!,
-          startDate: contract.startDate!,
-          endDate: contract.endDate!,
-          monthlyBilling: form.financedAmount /selectedProduct.durationMonths,
-          monthlyPayment: this.contractForm.value.customermonthlyamount,
-          originalAmount: contract.originalAmount,
-          royaltyFee: 0,
-          balance: 0,
-          productID: contract.productID!,
-          financedAmount: contract.financedAmount ?? 0,
-          daysOfWeek: contract.daysOfWeek ?? '',
-          runningTotal: this.runningTotal
-        };
-  
-        console.log("📦 Account payload:", accountPayload);
-  
-        this.accountService.createAccount(accountPayload).subscribe({
-          next: () => {
-            console.log("✅ Account saved successfully.");
-            this.toastr.success('Contract and account saved successfully.', 'Success');
-            this.submitting = false;
-            this.contractForm.reset();
-          },
-          error: (err) => {
-            console.error("❌ Error saving account:", err);
-            this.toastr.error('Account creation failed.', 'Error');
-            this.submitting = false;
-          }
-        });
+        this.toastr.success('Contract saved successfully.', 'Success');
+        this.submitting = false;
+        this.router.navigate(['/form/Franchisee-Agreement']); // Navigate back to the list/form
       },
       error: (err) => {
         console.error("❌ Error saving contract:", err);
-        this.toastr.error('Contract creation failed.', 'Error');
+        this.toastr.error('Contract saving failed.', 'Error');
         this.submitting = false;
       }
     });

@@ -3,6 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { ContractComponent } from '../../../app/Franchisee-Agreement/contract.component';
 import { PromissaryContractsComponent } from '../../../app/Franchisee-Accounts/prommisary.component';
 import { ContractsTableComponent } from '../../../app/Franchisee-Statement/Contracts-table.component';
+import { ContractEditComponent } from '../../Franchisee-Agreement-edit/contract-edit.component';
 import { MonthlyTransactionsComponent } from '../../Franchisee-History/monthly-transactions.component';
 import { FranchiseeBillAdvancedFormComponent } from '../../../app/franchise-bill/franchisee-bill-advanced-form.component';
 import { CustomerComponent  } from '../../customer/customer.component';
@@ -40,6 +41,11 @@ const routes: Routes = [
         path: 'Franchisee-Agreement',
         component: ContractComponent
       },
+      {
+        path: 'Franchisee-Agreement-Edit/:vendorId/:contractId',
+        component: ContractEditComponent
+      },
+      
       {
         path: 'promissary-contracts',
         component: PromissaryContractsComponent

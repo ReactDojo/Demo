@@ -83,6 +83,7 @@ export const MENU: MenuItem[] = [
         icon: 'bx-file',
         link: '/form/Franchisee-Agreement'
       },
+      
       {
         id: 200,
         label: 'Franchisee Promissary',
