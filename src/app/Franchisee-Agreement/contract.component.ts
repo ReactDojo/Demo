@@ -304,7 +304,7 @@ export class ContractComponent implements OnInit {
       startDate: form.startDate,
       endDate: form.endDate,
       originalAmount: form.originalAmount,
-      downpayment: form.originalAmount - form.financedAmount,
+      downPayment: form.originalAmount - form.financedAmount,
       customermonthlyamount: this.contractForm.value.customermonthlyamount,
       paymentOnProduct: this.adjustedPayments, // ✅ <-- from live calc
       financedAmount: form.financedAmount,

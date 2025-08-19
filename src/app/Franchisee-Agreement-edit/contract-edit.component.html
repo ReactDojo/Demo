@@ -176,41 +176,21 @@
                             placeholder="Optional notes..."></textarea>
                     </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Initial Payments Made</label>
-                        <select class="form-select" formControlName="initialPaymentsMade">
-                          <option [ngValue]="null" selected>Select Initial Payment</option>
-                          <option [ngValue]="0">0</option>
-                          <option [ngValue]="1">1</option>
-                          <option [ngValue]="2">2</option>
-                          <option [ngValue]="3">3</option>
-                          <option [ngValue]="4">4</option>
-                          <option [ngValue]="5">5</option>
-                          <option [ngValue]="6">6</option>
-                          <option [ngValue]="7">7</option>
-                          <option [ngValue]="8">8</option>
-                          <option [ngValue]="9">9</option>
-                          <option [ngValue]="10">10</option>
-                          <option [ngValue]="11">11</option>
-                          <option [ngValue]="12">12</option>
-                          <option [ngValue]="13">13</option>
-                          <option [ngValue]="14">14</option>
-                          <option [ngValue]="15">15</option>
-                        </select>
-                      </div>
-                      <div class="col-md-3 mb-3">
-                        <label class="form-label">Calculated Monthly</label>
-                        <div class="form-control bg-light">{{ contractForm.value.monthlyAmount | currency:'CAD' }}</div>
-                      </div>
+                    
                       
                       <div class="col-md-3 mb-3">
                         <label class="form-label">Remaining Payments</label>
-                        <div class="form-control bg-light">{{ adjustedPayments }}</div>
+                        <input type="text" class="form-control bg-light" formControlName="paymentOnProduct" readonly />
                       </div>
                       
                       <div class="col-md-3 mb-3">
                         <label class="form-label">Total Remaining Balance</label>
-                        <div class="form-control bg-light">{{ runningTotal | currency }}</div>
+                        <input type="text" class="form-control bg-light" formControlName="runningTotal" readonly />
+                      </div>
+                      
+                      <div class="col-md-3 mb-3">
+                        <label class="form-label">Monthly Payment</label>
+                        <input type="text" class="form-control bg-light" formControlName="monthlyPayment" readonly />
                       </div>
                       
                       

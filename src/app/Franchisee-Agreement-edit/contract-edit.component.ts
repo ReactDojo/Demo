@@ -43,8 +43,7 @@ export class ContractEditComponent implements OnInit {
   submitting = false;
 
   // 🔽 Declare these here:
-  runningTotal: number = 0;
-  adjustedPayments: number = 0;
+  
 
   constructor(
     private fb: FormBuilder,
@@ -106,26 +105,7 @@ export class ContractEditComponent implements OnInit {
       }
     });
 
-    this.contractForm.valueChanges.subscribe(values => {
-      const originalAmount = values.originalAmount ?? 0;
-      const financedAmount = values.financedAmount ?? 0;
-      const product = this.products.find(p => p.productID === values.productID);
-      const initialPayments = values.initialPaymentsMade ?? 0;
-      const duration = product?.durationMonths ?? 0;
-      console.log("🔄 duration", duration);
-
-      const adjustedPayments = Math.max(duration - initialPayments, 0);
-      const calculatedMonthly = adjustedPayments > 0 ? financedAmount / duration : 0;
-      const calculatedRunningTotal = (calculatedMonthly * adjustedPayments);
-
-      this.contractForm.patchValue({
-        downpayment: originalAmount - financedAmount,
-        monthlyAmount: calculatedMonthly
-      }, { emitEvent: false });
-
-      this.runningTotal = calculatedRunningTotal;
-      this.adjustedPayments = adjustedPayments;
-    });
+    
   }
 
   loadContractFromVendorList(vendorId: number, contractId: number): void {
@@ -145,22 +125,44 @@ export class ContractEditComponent implements OnInit {
 
           const vendor = this.vendors.find(v => v.vendorID === contract.supplierID);
           const customer = this.customers.find(c => c.Id === contract.customerID.toString());
+          const frequency = this.frequencies.find(f => f.frequencyID === contract.frequencyID);
+
+          // Calculate initialPaymentsMade before patching
+          let calculatedInitialPaymentsMade: number | null = null;
+          const product = this.products.find(p => p.productID === contract.productID);
+          
+          if (product && product.durationMonths !== undefined && contract.paymentOnProduct !== undefined) {
+            const duration = product.durationMonths;
+            const paymentOnProduct = contract.paymentOnProduct;
+            
+            // Ensure both are numbers before calculation
+            if (typeof duration === 'number' && typeof paymentOnProduct === 'number') {
+                calculatedInitialPaymentsMade = duration - paymentOnProduct;
+                // Ensure it's within the valid range for the dropdown
+                if (calculatedInitialPaymentsMade < 0 || calculatedInitialPaymentsMade > 15) {
+                    calculatedInitialPaymentsMade = null; // Or some default if out of range
+                }
+            }
+          }
 
           this.contractForm.patchValue({
             vendorID: vendor ? vendor.Id : null,
             customerID: customer ? customer.Id : null,
             productID: contract.productID,
-            frequencyID: contract.frequencyID,
+            frequencyID: frequency ? frequency.frequencyID : null,
             startDate: contract.startDate ? new Date(contract.startDate).toISOString().split('T')[0] : '',
             endDate: contract.endDate ? new Date(contract.endDate).toISOString().split('T')[0] : '',
             originalAmount: contract.originalAmount,
             financedAmount: contract.financedAmount,
             notes: contract.notes,
             customerMonthlyAmount: formData.customerMonthlyAmount || contract.customerMonthlyAmount || null,
-            initialPaymentsMade: formData.initialPaymentsMade || null,
-            downpayment: formData.downpayment || null,
+            initialPaymentsMade: calculatedInitialPaymentsMade, // Use the calculated value
+            downpayment: contract.downPayment || null,
             monthlyAmount: formData.monthlyAmount || null,
-            daysOfWeek: formData.daysOfWeek || ''
+            daysOfWeek: contract.daysOfWeek || '',
+            runningTotal: contract.runningTotal, // Add runningTotal
+            paymentOnProduct: contract.paymentOnProduct, // Add paymentOnProduct
+            monthlyPayment: contract.monthlyPayment // Add monthlyPayment
           });
           
           this.contractForm.get('vendorID')?.disable();
@@ -192,10 +194,13 @@ export class ContractEditComponent implements OnInit {
       financedAmount: ['', Validators.required],
       customerMonthlyAmount: ['', Validators.required],
       downpayment: ['', Validators.required],
-      monthlyAmount: ['', Validators.required],
+      monthlyAmount: [null], // Changed to null and removed Validators.required
       initialPaymentsMade: [null], 
       notes: [''],
-      daysOfWeek: [''] 
+      daysOfWeek: [''],
+      runningTotal: [null], // Add runningTotal form control
+      paymentOnProduct: [null], // Add paymentOnProduct form control 
+      monthlyPayment: [null] // Added monthlyPayment form control 
     });
       // Optionally you can subscribe to frequency changes to validate dynamically
   this.contractForm.get('frequencyID')?.valueChanges.subscribe(() => {
@@ -384,15 +389,15 @@ export class ContractEditComponent implements OnInit {
       startDate: form.startDate,
       endDate: form.endDate,
       originalAmount: form.originalAmount,
-      downpayment: form.originalAmount - form.financedAmount,
+      downPayment: form.originalAmount - form.financedAmount,
       customerMonthlyAmount: this.contractForm.value.customerMonthlyAmount,
-      paymentOnProduct: this.adjustedPayments,
+      paymentOnProduct: form.paymentOnProduct,
       financedAmount: form.financedAmount,
-      runningTotal: this.runningTotal,
+      runningTotal: form.runningTotal,
       daysOfWeek: form.daysOfWeek,
       contractData: JSON.stringify(form), // Save form as a JSON string
       notes: form.notes,
-      monthlyPayment: form.financedAmount / (selectedProduct?.durationMonths || 1)
+      monthlyPayment: form.monthlyPayment
     };
   
     console.log("📦 Contract payload:", contractPayload);
