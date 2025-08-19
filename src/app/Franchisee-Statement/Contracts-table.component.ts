@@ -266,17 +266,22 @@ export class ContractsTableComponent implements OnInit {
     const today = new Date();
     const billDate = today.toISOString().split('T')[0];
 
+    // Shorten DocNumber
+    const monthName = today.toLocaleString('default', { month: 'long' });
+    const yearFull = today.getFullYear();
+    const docNumber = `Fran-${monthName}-${yearFull}`;
+
     const billJson = {
       VendorRef: { value: this.selectedVendorId.toString() },
       TxnDate: billDate,
       DueDate: billDate,
-      DocNumber: `Franchisee-${today.toLocaleString('default', { month: 'long' })}-${today.getFullYear()}`,
+      DocNumber: docNumber,
       PrivateNote: this.billPrivateNote,
       GlobalTaxCalculation: "TaxExcluded",
       Line: [
         {
           DetailType: "AccountBasedExpenseLineDetail",
-          Amount: Math.abs(this.totals.netPayment),
+          Amount: +Math.abs(this.totals.netPayment).toFixed(2),
           Description: "Services rendered",
           AccountBasedExpenseLineDetail: {
             AccountRef: { value: "16", name: "Subcontractors - COS" },
@@ -285,7 +290,7 @@ export class ContractsTableComponent implements OnInit {
         },
         {
           DetailType: "AccountBasedExpenseLineDetail",
-          Amount: Math.abs(this.totals.royaltyFee),
+          Amount: +Math.abs(this.totals.royaltyFee).toFixed(2),
           Description: `Royalty fee of ${this.newAccount.royaltyFee}%`,
           AccountBasedExpenseLineDetail: {
             AccountRef: { value: "48", name: "Royalty Expense" },
@@ -294,7 +299,7 @@ export class ContractsTableComponent implements OnInit {
         },
         {
           DetailType: "AccountBasedExpenseLineDetail",
-          Amount: Math.abs(this.totals.promissoryPayment),
+          Amount: +Math.abs(this.totals.promissoryPayment).toFixed(2),
           Description: "Franchisee offset",
           AccountBasedExpenseLineDetail: {
             AccountRef: { value: "56", name: "Franchisee Offset" },
