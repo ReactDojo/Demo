@@ -18,4 +18,5 @@ export interface Contract {
   customermonthlyamount?:number;
   customerMonthlyAmount?:number;
   monthlyPayment?: number;
+  backCharge?: boolean | null;   // ← maps to SQL [bit] NULL (C# bool?)
 }
