@@ -22,6 +22,8 @@ import { catchError } from 'rxjs/operators';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import html2pdf from 'html2pdf.js';
+import { SpecialAgreementService } from '../services/specialagreement.service';
+import { SpecialAgreement } from '../models/special-agreement.model';
 
 export interface DisplayAccount extends Account {
   customerName: string;
@@ -53,6 +55,7 @@ export class ContractsTableComponent implements OnInit {
   accounts: Account[] = [];
   products:Product[] = [];
   frequencies:Frequency[] = [];
+  specialAgreements: SpecialAgreement[] = [];
   totalMonthlyFeeFromServer: number = 0;
   frequencyMultiplierMap: { [key: number]: number } = {
     1: 1,
@@ -88,7 +91,8 @@ export class ContractsTableComponent implements OnInit {
     private frequencyService: FrequencyService,
     private toastr: ToastrService,
     private productService: ProductService,
-    private royaltyService: RoyaltyService
+    private royaltyService: RoyaltyService,
+    private specialAgreementService: SpecialAgreementService
     
   ) {
     this.filterForm = this.fb.group({
@@ -101,6 +105,7 @@ export class ContractsTableComponent implements OnInit {
     this.loadCustomers();
     this.loadProducts();
     this.loadFrequencies();
+    this.loadSpecialAgreements();
     const now = new Date();
     this.newAccount.startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
     
@@ -112,6 +117,34 @@ export class ContractsTableComponent implements OnInit {
     this.newAccount.endDate = new Date(now.getFullYear(), now.getMonth(), 0)
     .toISOString()
     .split('T')[0];
+  }
+
+  loadSpecialAgreements(): void {
+    this.specialAgreementService.getAll().subscribe(agreements => {
+      this.specialAgreements = agreements;
+    });
+  }
+
+  create(): void {
+    if (!this.selectedVendorId) {
+      this.toastr.error('Please select a vendor first.');
+      return;
+    }
+    const newAgreement: SpecialAgreement = {
+      Id: 0, // The backend should generate the id
+      CustomerId: this.newAccount.customerID,
+      SupplierId: +this.selectedVendorId,
+      StartDate: this.newAccount.startDate,
+      EndDate: this.newAccount.endDate,
+      AgreementPrice: this.newAccount.monthlyBilling,
+      RoyaltyPercent: this.newAccount.royaltyFee
+    };
+
+    this.specialAgreementService.create(newAgreement)
+      .subscribe(agreement => {
+        this.specialAgreements.push(agreement);
+        this.toastr.success('Special Agreement Created');
+      });
   }
 
   getCurrentBillingPeriodString(): string {

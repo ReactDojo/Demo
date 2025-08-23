@@ -43,6 +43,7 @@
         <div class="table-responsive mb-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="mb-0">Accounts</h5>
+            <button type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#specialAgreementModal">Create Special Agreement</button>
             <div class="input-group" style="width: 200px;">
               <span class="input-group-text">Royalty Fee</span>
               <input 
@@ -294,5 +295,47 @@
       </div>
     </div>
   </div>
+  </div>
+</div>
+
+<!-- Special Agreement Modal -->
+<div class="modal fade" id="specialAgreementModal" tabindex="-1" aria-labelledby="specialAgreementModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="specialAgreementModalLabel">Create Special Agreement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="create()">
+          <div class="mb-3">
+            <label for="sa_customerID" class="form-label">Customer</label>
+            <select class="form-select" [(ngModel)]="newAccount.customerID" name="sa_customerID" required>
+              <option *ngFor="let c of customers" [value]="c.Id">{{ c.DisplayName }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="sa_startDate" class="form-label">Start Date</label>
+            <input type="date" class="form-control" [(ngModel)]="newAccount.startDate" name="sa_startDate" required>
+          </div>
+          <div class="mb-3">
+            <label for="sa_endDate" class="form-label">End Date</label>
+            <input type="date" class="form-control" [(ngModel)]="newAccount.endDate" name="sa_endDate">
+          </div>
+          <div class="mb-3">
+            <label for="sa_monthlyBilling" class="form-label">Agreement Price</label>
+            <input type="number" class="form-control" placeholder="Agreement Price" [(ngModel)]="newAccount.monthlyBilling" name="sa_monthlyBilling">
+          </div>
+          <div class="mb-3">
+            <label for="sa_royaltyFee" class="form-label">Royalty Percent</label>
+            <input type="number" class="form-control" placeholder="Royalty Percent" [(ngModel)]="newAccount.royaltyFee" name="sa_royaltyFee">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Create Agreement</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
