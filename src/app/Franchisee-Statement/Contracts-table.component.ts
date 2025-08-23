@@ -105,7 +105,7 @@ export class ContractsTableComponent implements OnInit {
     this.loadCustomers();
     this.loadProducts();
     this.loadFrequencies();
-    this.loadSpecialAgreements();
+    this.updateBillNotesForSpecialAgreements();
     const now = new Date();
     this.newAccount.startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
     
@@ -120,9 +120,43 @@ export class ContractsTableComponent implements OnInit {
   }
 
   loadSpecialAgreements(): void {
-    this.specialAgreementService.getAll().subscribe(agreements => {
-      this.specialAgreements = agreements;
+    if (this.selectedVendorId) {
+      const now = new Date();
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  
+      this.specialAgreementService.getBySupplier(+this.selectedVendorId).subscribe(agreements => {
+        this.specialAgreements = agreements.filter(a => {
+          const startDate = new Date(a.StartDate);
+          return startDate >= firstDay && startDate <= lastDay;
+        });
+        this.updateBillNotesForSpecialAgreements();
+      });
+    } else {
+      this.specialAgreements = [];
+      this.updateBillNotesForSpecialAgreements();
+    }
+  }
+
+  deleteSpecialAgreement(id: number): void {
+    this.specialAgreementService.delete(id).subscribe(() => {
+      this.loadSpecialAgreements();
+      this.toastr.success('Special Agreement deleted successfully');
     });
+  }
+
+  updateBillNotesForSpecialAgreements(): void {
+    let specialAgreementsNotes = '';
+    if (this.specialAgreements.length > 0) {
+      specialAgreementsNotes = this.specialAgreements.map(sa => {
+        const royaltyFee = sa.royaltyFee || ((sa.AgreementPrice || 0) * (sa.RoyaltyPercent || 0) / 100);
+        const subtotal = sa.agreementSubtotal || ((sa.AgreementPrice || 0) + royaltyFee);
+        return `Special Agreement: Royalty ${sa.RoyaltyPercent || 0}% (${royaltyFee.toFixed(2)}), Price: ${sa.AgreementPrice || 0}, Subtotal: ${subtotal.toFixed(2)}`;
+      }).join('\n');
+    }
+    
+    const baseNote = `Franchisee billing for ${this.getCurrentBillingPeriodString()}`;
+    this.billPrivateNote = baseNote + (specialAgreementsNotes ? `\n${specialAgreementsNotes}` : '');
   }
 
   create(): void {
@@ -130,20 +164,29 @@ export class ContractsTableComponent implements OnInit {
       this.toastr.error('Please select a vendor first.');
       return;
     }
+
+    const agreementPrice = this.newAccount.monthlyBilling || 0;
+    const royaltyPercent = this.newAccount.royaltyFee || 0;
+    const royaltyFee = agreementPrice * (royaltyPercent / 100);
+    const agreementSubtotal = agreementPrice + royaltyFee;
+
     const newAgreement: SpecialAgreement = {
       Id: 0, // The backend should generate the id
       CustomerId: this.newAccount.customerID,
       SupplierId: +this.selectedVendorId,
       StartDate: this.newAccount.startDate,
       EndDate: this.newAccount.endDate,
-      AgreementPrice: this.newAccount.monthlyBilling,
-      RoyaltyPercent: this.newAccount.royaltyFee
+      AgreementPrice: agreementPrice,
+      RoyaltyPercent: royaltyPercent,
+      royaltyFee: royaltyFee,
+      agreementSubtotal: agreementSubtotal
     };
 
     this.specialAgreementService.create(newAgreement)
       .subscribe(agreement => {
         this.specialAgreements.push(agreement);
         this.toastr.success('Special Agreement Created');
+        this.updateBillNotesForSpecialAgreements();
       });
   }
 
@@ -472,6 +515,7 @@ export class ContractsTableComponent implements OnInit {
       });
 
       this.recalculateTotals();
+      this.loadSpecialAgreements();
       this.toastr.success('Vendor data loaded.');
     });
   }

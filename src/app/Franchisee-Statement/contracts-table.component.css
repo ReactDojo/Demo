@@ -60,4 +60,9 @@
   visibility: hidden;
 }
 
+.greyed-out {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
   

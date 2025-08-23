@@ -6,4 +6,6 @@ export interface SpecialAgreement {
   EndDate?: string | null;         // "YYYY-MM-DD"
   RoyaltyPercent?: number | null;
   AgreementPrice?: number | null;  // server uses MONEY; treat as number in TS
+  royaltyFee?: number | null;
+  agreementSubtotal?: number | null;
 }
