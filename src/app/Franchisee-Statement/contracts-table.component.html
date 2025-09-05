@@ -179,41 +179,50 @@
             </tfoot>
           </table>
           <!-- Special Agreements Table -->
-          <div class="mt-4" [class.greyed-out]="specialAgreements.length === 0">
-            <h5 class="mb-3">Special Agreements for Current Month</h5>
-            <fieldset [disabled]="specialAgreements.length === 0">
-              <table class="table table-bordered">
-                <thead class="table-light">
-                  <tr>
-                    <th>Customer</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Agreement Price</th>
-                    <th>Royalty Percent</th>
-                    <th>Royalty Fee</th>
-                    <th>Subtotal</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngIf="specialAgreements.length === 0">
-                    <td colspan="7" class="text-center text-muted">No special agreements for this month.</td>
-                  </tr>
-                  <tr *ngFor="let agreement of specialAgreements">
-                    <td>{{ getCustomerName(agreement.CustomerId) }}</td>
-                    <td>{{ agreement.StartDate | date:'yyyy-MM-dd' }}</td>
-                    <td>{{ agreement.EndDate | date:'yyyy-MM-dd' }}</td>
-                    <td>{{ agreement.AgreementPrice | currency }}</td>
-                    <td>{{ agreement.RoyaltyPercent }}%</td>
-                    <td>{{ agreement.royaltyFee | currency }}</td>
-                    <td>{{ agreement.agreementSubtotal | currency }}</td>
-                    <td>
-                      <button class="btn btn-danger btn-sm" (click)="deleteSpecialAgreement(agreement.Id)">Delete</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </fieldset>
+          <div class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">Special Agreements</h5>
+              <div>
+                <button class="btn btn-secondary btn-sm me-2" (click)="prevMonth()">Prev Month</button>
+                <span class="mx-2 fw-bold">{{ currentMonth | date:'MMMM yyyy' }}</span>
+                <button class="btn btn-secondary btn-sm ms-2" (click)="nextMonth()">Next Month</button>
+              </div>
+            </div>
+            <div [class.greyed-out]="specialAgreements.length === 0">
+              <fieldset [disabled]="specialAgreements.length === 0">
+                <table class="table table-bordered">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Customer</th>
+                      <th>Start Date</th>
+                      <th>End Date</th>
+                      <th>Agreement Price</th>
+                      <th>Royalty Percent</th>
+                      <th>Royalty Fee</th>
+                      <th>Subtotal</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngIf="specialAgreements.length === 0">
+                      <td colspan="8" class="text-center text-muted">No special agreements for this month.</td>
+                    </tr>
+                    <tr *ngFor="let agreement of specialAgreements">
+                      <td>{{ getCustomerName(agreement.CustomerId) }}</td>
+                      <td>{{ agreement.StartDate | date:'yyyy-MM-dd' }}</td>
+                      <td>{{ agreement.EndDate | date:'yyyy-MM-dd' }}</td>
+                      <td>{{ agreement.AgreementPrice | currency }}</td>
+                      <td>{{ agreement.RoyaltyPercent }}%</td>
+                      <td>{{ agreement.royaltyFee | currency }}</td>
+                      <td>{{ agreement.agreementSubtotal | currency }}</td>
+                      <td>
+                        <button class="btn btn-danger btn-sm" (click)="deleteSpecialAgreement(agreement.Id)">Delete</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </fieldset>
+            </div>
           </div>
           <div class="mt-4">
             <label for="billNotes" class="form-label fw-semibold">Notes / Description (appears on QuickBooks bill)</label>

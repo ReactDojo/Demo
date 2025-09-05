@@ -56,6 +56,8 @@ export class ContractsTableComponent implements OnInit {
   products:Product[] = [];
   frequencies:Frequency[] = [];
   specialAgreements: SpecialAgreement[] = [];
+  allSpecialAgreements: SpecialAgreement[] = [];
+  currentMonth: Date = new Date();
   totalMonthlyFeeFromServer: number = 0;
   frequencyMultiplierMap: { [key: number]: number } = {
     1: 1,
@@ -119,23 +121,37 @@ export class ContractsTableComponent implements OnInit {
     .split('T')[0];
   }
 
+  prevMonth(): void {
+    const newDate = new Date(this.currentMonth);
+    newDate.setMonth(newDate.getMonth() - 1);
+    this.currentMonth = newDate;
+    this.loadSpecialAgreements();
+  }
+
+  nextMonth(): void {
+    const newDate = new Date(this.currentMonth);
+    newDate.setMonth(newDate.getMonth() + 1);
+    this.currentMonth = newDate;
+    this.loadSpecialAgreements();
+  }
+
   loadSpecialAgreements(): void {
-    if (this.selectedVendorId) {
-      const now = new Date();
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  
-      this.specialAgreementService.getBySupplier(+this.selectedVendorId).subscribe(agreements => {
-        this.specialAgreements = agreements.filter(a => {
-          const startDate = new Date(a.StartDate);
-          return startDate >= firstDay && startDate <= lastDay;
-        });
-        this.updateBillNotesForSpecialAgreements();
-      });
-    } else {
-      this.specialAgreements = [];
-      this.updateBillNotesForSpecialAgreements();
-    }
+    const firstDay = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth(), 1);
+    const lastDay = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 0);
+
+    firstDay.setHours(0, 0, 0, 0);
+    lastDay.setHours(23, 59, 59, 999);
+
+    this.specialAgreements = this.allSpecialAgreements.filter(a => {
+      if (!a.StartDate) {
+        return false;
+      }
+      const parts = a.StartDate.split('T')[0].split('-').map(Number);
+      const startDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      return startDate >= firstDay && startDate <= lastDay;
+    });
+
+    this.updateBillNotesForSpecialAgreements();
   }
 
   deleteSpecialAgreement(id: number): void {
@@ -476,18 +492,22 @@ export class ContractsTableComponent implements OnInit {
   onVendorChange(): void {
     const vendorId = this.filterForm.get('vendorID')?.value;
     this.selectedVendorId = vendorId;
+    this.currentMonth = new Date();
 
     if (!vendorId) {
       this.displayAccounts = [];
       this.recalculateTotals();
+      this.allSpecialAgreements = [];
+      this.loadSpecialAgreements();
       return;
     }
 
     forkJoin({
       contracts: this.contractService.getContractsByVendor(vendorId),
       accounts: this.accountService.getAccountsByVendor(vendorId),
-      royalty: this.royaltyService.getRoyaltyByVendorId(vendorId)
-    }).subscribe(({ contracts, accounts, royalty }) => {
+      royalty: this.royaltyService.getRoyaltyByVendorId(vendorId),
+      specialAgreements: this.specialAgreementService.getBySupplier(vendorId)
+    }).subscribe(({ contracts, accounts, royalty, specialAgreements }) => {
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
       const monthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
@@ -514,6 +534,7 @@ export class ContractsTableComponent implements OnInit {
         return displayAccount;
       });
 
+      this.allSpecialAgreements = specialAgreements;
       this.recalculateTotals();
       this.loadSpecialAgreements();
       this.toastr.success('Vendor data loaded.');
